@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="assets/css/login.css" />
+  <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon-180x180.png" />
+  <!-- ============================================================
+       La Herradura — Sistema de Administración de Actividadesssssssssssss
+       Pantalla de Inicio de Sesión
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sistema de Administración — Distribución de Semillas y Productos del Campo La Herradura" />
+  <title>La Herradura · Acceso al Sistema</title>
+
+  <!-- Google Fonts: Playfair Display (display) + DM Sans (UI) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+ <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <!-- Estilos principales -->
+  
+</head>
+<body>
+  <iframe id="splash-frame" src="splash.html" style="position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;" scrolling="no"></iframe>
+
+<script>
+  setTimeout(function () {
+    const frame = document.getElementById('splash-frame');
+    frame.style.transition = 'opacity .6s ease';
+    frame.style.opacity = '0';
+    setTimeout(function () { frame.remove(); }, 650);
+  }, 3850);
+</script>
+  <!-- ============================================================
+       CAPA DE FONDO — Canvas animado con partículas agrícolas
+       ============================================================ -->
+  <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
+
+  <!-- ============================================================
+       LAYOUT PRINCIPAL — Dos paneles: Marca | Formulario
+       ============================================================ -->
+  <main class="login-layout" role="main">
+
+    <!-- ── PANEL IZQUIERDO: Identidad de Marca ─────────────────── -->
+    <section class="brand-panel" aria-label="Identidad de la empresa">
+
+      <!-- Overlay de textura -->
+      <div class="brand-panel__overlay" aria-hidden="true"></div>
+
+      <!-- Ornamento geométrico superior -->
+      <div class="brand-panel__ornament brand-panel__ornament--top" aria-hidden="true">
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+          <circle cx="100" cy="100" r="70" fill="none" stroke="currentColor" stroke-width="1" opacity="0.2"/>
+          <circle cx="100" cy="100" r="50" fill="none" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+        </svg>
+      </div>
+
+      <!-- Contenido de marca -->
+      <div class="brand-panel__content">
+
+        <!-- Logo de la empresa -->
+        <div class="brand-logo" role="img" aria-label="Logo La Herradura">
+          <div class="brand-logo__icon">
+            <img
+              src="assets/img/logo.png"
+              alt="Logo La Herradura"
+              class="brand-logo__img"
+            />
+          </div>
+          <div class="brand-logo__wordmark">
+            <span class="brand-logo__name">La Herradura</span>
+            <span class="brand-logo__tagline">Distribuidora de Semillas y Productos del Campo</span>
+          </div>
+        </div>
+
+        <!-- Separador decorativo -->
+        <div class="brand-divider" aria-hidden="true">
+          <span class="brand-divider__line"></span>
+          <span class="brand-divider__icon">✦</span>
+          <span class="brand-divider__line"></span>
+        </div>
+
+        <!-- Headline del sistema -->
+        <div class="brand-headline">
+          <h1 class="brand-headline__title">Sistema de<br/>Administración</h1>
+          <p class="brand-headline__sub">Control y gestión de actividades operativas</p>
+        </div>
+
+        <!-- Estadísticas / Micro-datos decorativos -->
+        <div class="brand-stats" aria-hidden="true">
+          <div class="brand-stats__item">
+            <span class="brand-stats__value">+15</span>
+            <span class="brand-stats__label">Años en el campo</span>
+          </div>
+          <div class="brand-stats__sep"></div>
+          <div class="brand-stats__item">
+            <span class="brand-stats__value">100%</span>
+            <span class="brand-stats__label">Calidad certificada</span>
+          </div>
+          <div class="brand-stats__sep"></div>
+          <div class="brand-stats__item">
+            <span class="brand-stats__value">MX</span>
+            <span class="brand-stats__label">Distribución nacional</span>
+          </div>
+        </div>
+
+      </div><!-- /brand-panel__content -->
+
+      <!-- Ornamento inferior -->
+      <div class="brand-panel__ornament brand-panel__ornament--bottom" aria-hidden="true">
+        <svg viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+          <!-- Silueta de espigas de trigo estilizadas -->
+          <g opacity="0.18" fill="currentColor">
+            <ellipse cx="30"  cy="60" rx="4" ry="18" transform="rotate(-15 30 60)"/>
+            <ellipse cx="30"  cy="60" rx="4" ry="14" transform="rotate(5 30 60)"/>
+            <ellipse cx="80"  cy="55" rx="4" ry="20" transform="rotate(-10 80 55)"/>
+            <ellipse cx="80"  cy="55" rx="4" ry="16" transform="rotate(8 80 55)"/>
+            <ellipse cx="130" cy="58" rx="4" ry="19" transform="rotate(-12 130 58)"/>
+            <ellipse cx="130" cy="58" rx="4" ry="15" transform="rotate(6 130 58)"/>
+            <ellipse cx="180" cy="54" rx="4" ry="21" transform="rotate(-8 180 54)"/>
+            <ellipse cx="180" cy="54" rx="4" ry="17" transform="rotate(10 180 54)"/>
+            <ellipse cx="230" cy="57" rx="4" ry="18" transform="rotate(-14 230 57)"/>
+            <ellipse cx="230" cy="57" rx="4" ry="14" transform="rotate(4 230 57)"/>
+            <ellipse cx="280" cy="56" rx="4" ry="20" transform="rotate(-9 280 56)"/>
+            <ellipse cx="280" cy="56" rx="4" ry="16" transform="rotate(7 280 56)"/>
+          </g>
+        </svg>
+      </div>
+
+    </section><!-- /brand-panel -->
+
+    <!-- ── PANEL DERECHO: Formulario de Acceso ─────────────────── -->
+    <section class="form-panel" aria-label="Formulario de inicio de sesión">
+
+      <!-- Indicador de seguridad -->
+      <div class="security-badge" aria-label="Conexión segura">
+        <span class="security-badge__dot" aria-hidden="true"></span>
+        <span class="security-badge__text">Conexión segura</span>
+      </div>
+
+      <!-- Contenedor principal del formulario -->
+      <div class="login-card">
+
+        <!-- Encabezado del card -->
+        <div class="login-card__header">
+          <h2 class="login-card__title">Bienvenido a La Herradura</h2>
+          <p class="login-card__subtitle">Ingresa tus datos para acceder al sistema</p>
+        </div>
+
+        <!-- ── FORMULARIO DE INICIO DE SESIÓN ── -->
+        <form id="login-form" class="login-form" novalidate autocomplete="off">
+
+          <!-- Campo: Identificación del usuario -->
+          <div class="form-group" id="group-identifier">
+            <label class="form-label" for="identifier">
+              <svg class="form-label__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M10 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4.42 0-8 1.79-8 4v1h16v-1c0-2.21-3.58-4-8-4z" fill="currentColor"/>
+              </svg>
+              Usuario / N° Empleado / Correo
+            </label>
+            <div class="form-input-wrapper">
+              <input
+                type="text"
+                id="identifier"
+                name="identifier"
+                class="form-input"
+                placeholder="ej. jlopez · E-00123 · jlopez@herradura.mx"
+                autocomplete="username"
+                aria-required="true"
+                aria-describedby="identifier-error"
+              />
+              <span class="form-input__focus-ring" aria-hidden="true"></span>
+            </div>
+            <span class="form-error" id="identifier-error" role="alert" aria-live="polite"></span>
+          </div>
+
+          <!-- Campo: Contraseña -->
+          <div class="form-group" id="group-password">
+            <label class="form-label" for="password">
+              <svg class="form-label__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="3" y="9" width="14" height="10" rx="2" fill="currentColor" opacity="0.7"/>
+                <path d="M7 9V6a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                <circle cx="10" cy="14" r="1.5" fill="#fff"/>
+              </svg>
+              Contraseña
+            </label>
+            <div class="form-input-wrapper">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-input form-input--password"
+                placeholder="••••••••••••"
+                autocomplete="current-password"
+                aria-required="true"
+                aria-describedby="password-error"
+              />
+              <!-- Botón para mostrar/ocultar contraseña -->
+              <button
+                type="button"
+                class="password-toggle"
+                id="password-toggle"
+                aria-label="Mostrar contraseña"
+                tabindex="0"
+              >
+                <svg class="eye-icon eye-icon--show" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6c-.73-2.89-4-6-9-6z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                  <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+                <svg class="eye-icon eye-icon--hide" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="display:none;">
+                  <path d="M2 2l16 16M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                  <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+              <span class="form-input__focus-ring" aria-hidden="true"></span>
+            </div>
+            <span class="form-error" id="password-error" role="alert" aria-live="polite"></span>
+          </div>
+
+          <!-- Alerta de error general -->
+          <div class="form-alert form-alert--error" id="login-alert" role="alert" aria-live="assertive" hidden>
+            <svg class="form-alert__icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 6v4M10 14h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <span class="form-alert__text" id="login-alert-text"></span>
+          </div>
+
+          <!-- Botón de envío -->
+          <button type="submit" class="btn-login" id="btn-login" aria-label="Iniciar sesión en el sistema">
+            <span class="btn-login__text">Iniciar Sesión</span>
+            <span class="btn-login__loader" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
+            <svg class="btn-login__arrow" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+        </form><!-- /login-form -->
+
+        <!-- Footer del card -->
+        <div class="login-card__footer">
+          <p class="login-card__footer-text">
+            Para soporte técnico o acceso, contacta al
+            <span class="login-card__footer-link">Administrador del Sistema</span>
+          </p>
+        </div>
+
+      </div><!-- /login-card -->
+
+      <!-- Copyright -->
+      <p class="form-panel__copyright">
+        © <span id="year"></span> La Herradura · Todos los derechos reservados
+      </p>
+
+    </section><!-- /form-panel -->
+
+  </main><!-- /login-layout -->
+
+  <!-- JavaScript principal -->
+ <script type="module" src="assets/js/login.js"></script>
+</body>
+</html>

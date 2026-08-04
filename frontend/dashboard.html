@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <!-- ============================================================
+       La Herradura — Panel Principal del Sistema
+       dashboard.html — v3.0 (+ Módulo de Reportes)
+       ============================================================ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Herradura · Panel Principal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js para los gráficos de reportes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- jsPDF + html2canvas para exportar PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <link rel="stylesheet" href="assets/css/dashboard.css" />
+  <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon-32x32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon-16x16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon-180x180.png" />
+  <style>
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       SIDEBAR — Menú lateral
+       ============================================================ -->
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menú principal">
+
+    <div class="sidebar__brand">
+      <div class="sidebar__logo">
+        <img src="assets/img/logo.png" alt="Logo La Herradura" class="sidebar__logo-img" />
+      </div>
+      <div class="sidebar__brand-text">
+        <span class="sidebar__brand-name">La Herradura</span>
+        <span class="sidebar__brand-sub">Sistema Administrativo</span>
+      </div>
+    </div>
+
+    <div class="sidebar__profile">
+      <div class="sidebar__avatar" id="sidebar-avatar">—</div>
+      <div class="sidebar__profile-info">
+        <span class="sidebar__profile-name" id="sidebar-name">Cargando…</span>
+        <span class="sidebar__profile-role" id="sidebar-role">—</span>
+      </div>
+      <button class="sidebar__profile-pw-btn" id="btn-change-password" type="button"
+              title="Cambiar contraseña" aria-label="Cambiar contraseña"
+              style="background:transparent;border:none;cursor:pointer;color:inherit;opacity:.7;padding:4px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="10" rx="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar__nav">
+      <ul class="sidebar__nav-list" role="list">
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__nav-link sidebar__nav-link--active" data-section="overview">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+            <span>Panel General</span>
+          </a>
+        </li>
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__nav-link" data-section="tasks">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M9 11l3 3L22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+            <span>Tareas</span>
+            <span class="sidebar__nav-badge" id="tasks-badge">0</span>
+          </a>
+        </li>
+        <li class="sidebar__nav-item" id="nav-employees-item" style="display:none">
+          <a href="#" class="sidebar__nav-link" data-section="employees">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Usuarios</span>
+          </a>
+        </li>
+
+
+        <!-- ── REPORTES (nuevo ítem) ─────────────────── -->
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__nav-link" data-section="reports">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <span>Reportes</span>
+          </a>
+        </li>
+
+        <!-- ── NOTIFICACIONES (historial) ─────────────── -->
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__nav-link" data-section="notifications">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Notificaciones</span>
+            <span class="sidebar__nav-badge" id="notif-nav-badge" style="display:none">0</span>
+          </a>
+        </li>
+
+      </ul>
+
+      <div class="sidebar__nav-sep" aria-hidden="true"></div>
+
+      <ul class="sidebar__nav-list" role="list" id="admin-nav" style="display:none">
+        <li class="sidebar__nav-item">
+          <a href="#" class="sidebar__nav-link" id="btn-sidebar-new-user">
+            <svg class="sidebar__nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+            <span>Crear Usuario</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <button class="sidebar__logout" id="btn-logout" aria-label="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span>Cerrar Sesión</span>
+    </button>
+
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+
+  <!-- ============================================================
+       CONTENIDO PRINCIPAL
+       ============================================================ -->
+  <div class="main-wrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar" role="banner">
+      <button class="topbar__hamburger" id="btn-hamburger" aria-label="Abrir menú" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="topbar__title">
+        <h1 class="topbar__title-text" id="page-title">Panel General</h1>
+        <span class="topbar__title-crumb" id="page-crumb">La Herradura · Sistema de Administración</span>
+      </div>
+
+      <div class="topbar__actions">
+        <div class="topbar__datetime" id="topbar-datetime" aria-live="polite"></div>
+
+        <!-- ── Campana de notificaciones ─────────────────────── -->
+        <div class="notif-bell-wrapper">
+          <button class="notif-bell" id="btn-notif-bell" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span class="notif-bell__badge" id="notif-bell-badge" hidden>0</span>
+          </button>
+
+          <div class="notif-dropdown" id="notif-dropdown" hidden>
+            <div class="notif-dropdown__header">
+              <span>Notificaciones</span>
+              <button class="notif-dropdown__mark-all" id="btn-notif-mark-all">Marcar todas como leídas</button>
+            </div>
+            <div class="notif-dropdown__list" id="notif-dropdown-list">
+              <div class="empty-state" style="padding:var(--space-6);">
+                <p>No hay notificaciones todavía.</p>
+              </div>
+            </div>
+            <button class="notif-dropdown__footer" id="btn-notif-ver-todas">Ver historial completo</button>
+          </div>
+        </div>
+
+        <div class="topbar__user">
+          <div class="topbar__avatar" id="topbar-avatar">—</div>
+          <div class="topbar__user-info">
+            <span class="topbar__user-name" id="topbar-name">—</span>
+            <span class="topbar__user-role" id="topbar-role">—</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENIDO -->
+    <main class="main-content" id="main-content" role="main">
+
+      <!-- ══ PANEL GENERAL ══════════════════════════════════════ -->
+      <section class="content-section" id="section-overview" aria-label="Panel general">
+
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-card--gold">
+            <div class="kpi-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+            </div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="kpi-total">0</span>
+              <span class="kpi-card__label">Total de tareas</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-card--amber">
+            <div class="kpi-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="kpi-pending">0</span>
+              <span class="kpi-card__label">Pendientes</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="kpi-done">0</span>
+              <span class="kpi-card__label">Completadas</span>
+            </div>
+          </div>
+
+          <div class="kpi-card kpi-card--red">
+            <div class="kpi-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="kpi-overdue">0</span>
+              <span class="kpi-card__label">Atrasadas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h2 class="section-header__title">Tareas recientes</h2>
+          <button class="btn-text" id="btn-go-tasks">Ver todas →</button>
+        </div>
+        <div class="task-preview-list" id="task-preview-list">
+          <div class="empty-state">
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <rect x="8" y="8" width="48" height="48" rx="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M20 32h24M20 22h24M20 42h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p>Aún no hay tareas registradas.<br/>Crea tu primera tarea en la sección Tareas.</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══ TAREAS ═════════════════════════════════════════════ -->
+      <section class="content-section content-section--hidden" id="section-tasks" aria-label="Tareas">
+
+        <div class="section-header">
+          <h2 class="section-header__title">Administración de Tareas</h2>
+          <div class="task-search-wrapper">
+            <div class="search-wrapper">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input type="search" class="search-input" id="task-search"
+                     placeholder="Buscar tareas…" aria-label="Buscar tareas" />
+            </div>
+            <button class="btn-primary" id="btn-new-task">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Nueva Tarea
+            </button>
+          </div>
+        </div>
+
+        <div class="filters-panel" id="filters-panel" role="group" aria-label="Filtros de tareas">
+
+          <div class="filters-row filters-row--status">
+            <div class="filters-group" role="group" aria-label="Filtrar por estado">
+              <span class="filters-group__label">Estado</span>
+              <div class="filters-pills" role="list">
+                <button class="filter-btn filter-btn--active" data-filter="all" role="listitem">Todas</button>
+                <button class="filter-btn" data-filter="pending" role="listitem">Pendientes</button>
+                <button class="filter-btn" data-filter="done" role="listitem">Completadas</button>
+                <button class="filter-btn" data-filter="overdue" role="listitem">Atrasadas</button>
+              </div>
+            </div>
+            <button class="filters-clear" id="btn-clear-filters" aria-label="Limpiar todos los filtros" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Limpiar filtros
+            </button>
+          </div>
+
+          <div class="filters-advanced-header">
+            <button class="filters-toggle-btn" id="btn-toggle-advanced-filters"
+                    aria-expanded="false" aria-controls="advanced-filters-body">
+              <span class="filters-toggle-btn__label">
+                <svg class="filters-toggle-btn__icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <line x1="2" y1="4.5" x2="14" y2="4.5"/>
+                  <line x1="2" y1="11.5" x2="14" y2="11.5"/>
+                  <circle cx="10" cy="4.5" r="1.8" fill="currentColor" stroke="none"/>
+                  <circle cx="6"  cy="11.5" r="1.8" fill="currentColor" stroke="none"/>
+                </svg>
+                Periodo
+              </span>
+              <svg class="filters-toggle-btn__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="4 6 8 10 12 6"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="advanced-filters-body" id="advanced-filters-body" hidden>
+            <div class="filters-divider" aria-hidden="true"></div>
+            <div class="filters-row filters-row--secondary">
+
+              <div class="filters-group" role="group" aria-label="Filtrar por período de tiempo">
+                <span class="filters-group__label">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                    <circle cx="8" cy="8" r="6.5"/>
+                    <polyline points="8 4.5 8 8 10.5 9.5"/>
+                  </svg>
+                  Periodo
+                </span>
+                <div class="time-filter" role="list">
+                  <button class="time-btn time-btn--active" data-time="all" role="listitem">
+                    <span class="time-btn__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1.5" x2="5" y2="4.5"/><line x1="11" y1="1.5" x2="11" y2="4.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><path d="M5 9.5h6M5 11.5h4"/></svg></span>
+                    <span class="time-btn__label">Todas</span>
+                  </button>
+                  <button class="time-btn" data-time="day" role="listitem">
+                    <span class="time-btn__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="3"/><line x1="8" y1="1" x2="8" y2="3"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="1" y1="8" x2="3" y2="8"/><line x1="13" y1="8" x2="15" y2="8"/></svg></span>
+                    <span class="time-btn__label">Hoy</span>
+                  </button>
+                  <button class="time-btn" data-time="week" role="listitem">
+                    <span class="time-btn__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1.5" x2="5" y2="4.5"/><line x1="11" y1="1.5" x2="11" y2="4.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><rect x="4.5" y="8.5" width="3" height="3" rx="0.5" fill="currentColor" stroke="none"/></svg></span>
+                    <span class="time-btn__label">Semana</span>
+                  </button>
+                  <button class="time-btn" data-time="month" role="listitem">
+                    <span class="time-btn__icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="11" rx="1.5"/><line x1="5" y1="1.5" x2="5" y2="4.5"/><line x1="11" y1="1.5" x2="11" y2="4.5"/><line x1="2" y1="6.5" x2="14" y2="6.5"/><text x="8" y="13" text-anchor="middle" font-size="5" stroke="none" fill="currentColor" font-family="sans-serif">31</text></svg></span>
+                    <span class="time-btn__label">Mes</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="filters-active-chips" id="filters-active-chips" aria-live="polite" aria-label="Filtros activos" hidden></div>
+
+          <div class="filters-results-bar" id="filters-results-bar" aria-live="polite">
+            <span class="filters-results-bar__count" id="filters-count-text">— tareas</span>
+            <span class="filters-results-bar__hint" id="filters-hint-text"></span>
+          </div>
+
+        </div>
+
+        <div class="task-list" id="task-list" role="list">
+          <div class="empty-state">
+            <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+              <rect x="8" y="8" width="48" height="48" rx="8" stroke="currentColor" stroke-width="2"/>
+              <path d="M20 32h24M20 22h24M20 42h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <p>No hay tareas en esta categoría.<br/>¡Empieza creando una nueva tarea!</p>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ══ EMPLEADOS ══════════════════════════════════════════ -->
+      <section class="content-section content-section--hidden" id="section-employees" aria-label="Usuarios">
+
+        <div class="section-header">
+          <h2 class="section-header__title">Directorio de Usuarios</h2>
+          <button class="btn-primary" id="btn-new-user" style="display:none" aria-label="Crear usuario nuevo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Crear Usuario
+          </button>
+        </div>
+
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" class="search-input" id="employee-search" placeholder="Buscar por nombre, cargo o número…" />
+        </div>
+
+        <div class="employee-grid" id="employee-grid" role="list"></div>
+
+      </section>
+
+      <!-- ══ REPORTES ═══════════════════════════════════════════ -->
+      <section class="content-section content-section--hidden" id="section-reports" aria-label="Reportes">
+
+        <!-- Hero encabezado -->
+        <div class="rpt-hero">
+          <div class="rpt-hero__icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none">
+              <rect x="4" y="4" width="40" height="40" rx="10" fill="rgba(232,184,50,.12)"/>
+              <path d="M14 34 L14 22" stroke="#E8B832" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M22 34 L22 16" stroke="#C99B1A" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M30 34 L30 26" stroke="#E8B832" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M38 34 L38 12" stroke="#C99B1A" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M10 38 L42 38" stroke="#E8B832" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="38" cy="10" r="4" fill="#E8B832" opacity=".3"/>
+              <circle cx="38" cy="10" r="2" fill="#E8B832"/>
+            </svg>
+          </div>
+          <div class="rpt-hero__text">
+            <h2 class="rpt-hero__title">Generador de Reportes</h2>
+            <p class="rpt-hero__subtitle">Analiza el rendimiento del equipo, filtra por periodo o usuario y exporta reportes profesionales en PDF.</p>
+          </div>
+          <div class="rpt-hero__badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Datos en tiempo real
+          </div>
+        </div>
+
+        <!-- Panel de filtros -->
+        <div class="rpt-filters-panel">
+          <div class="rpt-filters-panel__header">
+            <div class="rpt-filters-panel__header-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              <span>Filtros del Reporte</span>
+            </div>
+            <button class="btn-text" id="rpt-clear-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Limpiar
+            </button>
+          </div>
+
+          <div class="rpt-filters-grid">
+            <div class="rpt-filter-group">
+              <label class="rpt-filter-label" for="rpt-filter-mes">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Mes
+              </label>
+              <div class="rpt-select-wrapper">
+                <select class="rpt-select" id="rpt-filter-mes">
+                  <option value="">Todos los meses</option>
+                  <option value="1">Enero</option><option value="2">Febrero</option>
+                  <option value="3">Marzo</option><option value="4">Abril</option>
+                  <option value="5">Mayo</option><option value="6">Junio</option>
+                  <option value="7">Julio</option><option value="8">Agosto</option>
+                  <option value="9">Septiembre</option><option value="10">Octubre</option>
+                  <option value="11">Noviembre</option><option value="12">Diciembre</option>
+                </select>
+                <svg class="rpt-select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <div class="rpt-filter-group">
+              <label class="rpt-filter-label" for="rpt-filter-anio">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Año
+              </label>
+              <div class="rpt-select-wrapper">
+                <select class="rpt-select" id="rpt-filter-anio">
+                  <option value="">Todos</option>
+                  <option value="2025" selected>2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                </select>
+                <svg class="rpt-select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+
+            <div class="rpt-filter-group">
+              <label class="rpt-filter-label" for="rpt-filter-empleado">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Usuario
+              </label>
+              <div class="rpt-select-wrapper">
+                <select class="rpt-select" id="rpt-filter-empleado">
+                  <option value="">Todos</option>
+                </select>
+                <svg class="rpt-select-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="rpt-filters-actions">
+            <button class="btn-primary" id="rpt-generate-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="12 18 15 15 12 12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              Generar Reporte
+            </button>
+            <button class="btn-secondary" id="rpt-preview-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Vista previa
+            </button>
+            <button class="btn-secondary" id="rpt-pdf-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>
+              Crear PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards del reporte -->
+        <div class="kpi-grid" id="rpt-kpi-grid">
+          <div class="kpi-card kpi-card--gold">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-total">—</span>
+              <span class="kpi-card__label">Total de Tareas</span>
+            </div>
+          </div>
+          <div class="kpi-card kpi-card--green">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-done">—</span>
+              <span class="kpi-card__label">Completadas</span>
+            </div>
+          </div>
+          <div class="kpi-card kpi-card--amber">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-pending">—</span>
+              <span class="kpi-card__label">Pendientes</span>
+            </div>
+          </div>
+          <div class="kpi-card kpi-card--red">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-overdue">—</span>
+              <span class="kpi-card__label">Atrasadas</span>
+            </div>
+          </div>
+          <div class="kpi-card kpi-card--blue">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-ontime">—</span>
+              <span class="kpi-card__label">Completadas a tiempo</span>
+            </div>
+          </div>
+          <div class="kpi-card kpi-card--purple">
+            <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16.5 14.5"/></svg></div>
+            <div class="kpi-card__body">
+              <span class="kpi-card__value" id="rpt-kpi-avgtime">—</span>
+              <span class="kpi-card__label">Tiempo promedio de resolución</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráficas -->
+        <div class="section-header">
+          <h2 class="section-header__title">Estadísticas Visuales</h2>
+        </div>
+
+        <div class="rpt-charts-grid">
+          <!-- Dona -->
+          <div class="rpt-chart-card">
+            <div class="rpt-chart-card__header">
+              <div class="rpt-chart-card__title">Distribución de Tareas</div>
+              <div class="rpt-chart-card__subtitle">Por estado actual</div>
+            </div>
+            <div class="rpt-chart-card__body rpt-chart-card__body--center">
+              <div class="rpt-donut-wrapper">
+                <canvas id="rpt-chart-dona"></canvas>
+                <div class="rpt-donut-center">
+                  <span class="rpt-donut-center__num" id="rpt-donut-num">—</span>
+                  <span class="rpt-donut-center__label">Total</span>
+                </div>
+              </div>
+              <div class="rpt-chart-legend">
+                <div class="rpt-legend-item rpt-legend-item--green">
+                  <span class="rpt-legend-dot"></span>
+                  <span class="rpt-legend-label">Completadas</span>
+                  <span class="rpt-legend-val" id="rpt-leg-done">—</span>
+                </div>
+                <div class="rpt-legend-item rpt-legend-item--amber">
+                  <span class="rpt-legend-dot"></span>
+                  <span class="rpt-legend-label">Pendientes</span>
+                  <span class="rpt-legend-val" id="rpt-leg-pending">—</span>
+                </div>
+                <div class="rpt-legend-item rpt-legend-item--red">
+                  <span class="rpt-legend-dot"></span>
+                  <span class="rpt-legend-label">Atrasadas</span>
+                  <span class="rpt-legend-val" id="rpt-leg-overdue">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Progress bars -->
+        <div class="rpt-progress-card">
+          <div class="rpt-chart-card__header">
+            <div class="rpt-chart-card__title">Indicadores de Rendimiento</div>
+            <div class="rpt-chart-card__subtitle">Eficiencia global del período seleccionado</div>
+          </div>
+          <div class="rpt-progress-list" id="rpt-progress-list"></div>
+        </div>
+
+        <!-- Historial de reportes generados -->
+        <div class="section-header">
+          <h2 class="section-header__title">Historial de Reportes</h2>
+          <span class="rpt-history-count" id="rpt-history-count">0 reportes</span>
+        </div>
+
+        <div class="rpt-table-wrapper">
+          <table class="rpt-table" id="rpt-history-table">
+            <thead>
+              <tr>
+                <th>Período</th>
+                <th>Usuario</th>
+                <th>Generado</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="rpt-history-body">
+              <tr id="rpt-history-empty">
+                <td colspan="5">
+                  <div class="empty-state">
+                    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><rect x="8" y="8" width="48" height="48" rx="8" stroke="currentColor" stroke-width="2"/><path d="M20 32h24M20 22h24M20 42h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <p>Aún no has generado reportes.<br/>Configura los filtros y presiona <strong>Generar Reporte</strong>.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </section><!-- /section-reports -->
+
+      <!-- ══ NOTIFICACIONES (historial) ═════════════════════════ -->
+      <section class="content-section content-section--hidden" id="section-notifications" aria-label="Notificaciones">
+
+        <div class="section-header">
+          <h2 class="section-header__title">Historial de Notificaciones</h2>
+          <button class="btn-secondary" id="btn-notif-mark-all-history">Marcar todas como leídas</button>
+        </div>
+
+        <div class="filters-pills" role="list">
+          <button class="filter-btn filter-btn--active" data-notif-filter="all" role="listitem">Todas</button>
+          <button class="filter-btn" data-notif-filter="unread" role="listitem">No leídas</button>
+        </div>
+
+        <div class="notif-history-list" id="notif-history-list"></div>
+
+        <div style="display:flex;justify-content:center;padding:var(--space-4) 0;">
+          <button class="btn-secondary" id="btn-notif-load-more" hidden>Cargar más</button>
+        </div>
+
+      </section><!-- /section-notifications -->
+
+    </main>
+  </div>
+
+
+  <!-- ============================================================
+       MODALES EXISTENTES
+       ============================================================ -->
+
+  <!-- Modal: Nueva / Editar Tarea -->
+  <div class="modal-backdrop" id="modal-task-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-task-title"
+       hidden style="display:none">
+    <div class="modal" id="modal-task">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-task-title">Nueva Tarea</h3>
+        <button class="modal__close" id="modal-task-close" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="modal__form" id="task-form" novalidate>
+        <input type="hidden" id="task-edit-id" value="" />
+        <div class="modal__grid">
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="task-assignee">Asignar a</label>
+            <select id="task-assignee" class="mform-input mform-select">
+              <option value="">— Selecciona usuario —</option>
+            </select>
+          </div>
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="task-title">Tarea *</label>
+            <input type="text" id="task-title" class="mform-input" placeholder="ej. Revisión de caja chica" required />
+            <span class="mform-error" id="err-task-title"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="task-report-date">Fecha de reporte *</label>
+            <input type="date" id="task-report-date" class="mform-input" required />
+            <span class="mform-error" id="err-task-report-date"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="task-due">Fecha de término *</label>
+            <input type="date" id="task-due" class="mform-input" required />
+            <span class="mform-error" id="err-task-due"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="task-priority">Prioridad *</label>
+            <select id="task-priority" class="mform-input mform-select" required>
+              <option value="">— Selecciona prioridad —</option>
+              <option value="high">🔴 Alta</option>
+              <option value="medium">🟡 Media</option>
+              <option value="low">🟢 Baja</option>
+            </select>
+            <span class="mform-error" id="err-task-priority"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="task-status">Estado</label>
+            <select id="task-status" class="mform-input mform-select">
+              <option value="pending">⏳ Pendiente</option>
+              <option value="done">✅ Completada</option>
+            </select>
+          </div>
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="task-desc">Especificaciones de la tarea</label>
+            <textarea id="task-desc" class="mform-input mform-textarea" placeholder="Describe con detalle las especificaciones o requerimientos de la tarea…" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn-secondary" id="modal-task-cancel">Cancelar</button>
+          <button type="submit"  class="btn-primary"  id="modal-task-submit">Guardar Tarea</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Evidencias de una tarea (fotos y archivos) -->
+  <div class="modal-backdrop" id="modal-evidencias-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-evidencias-title"
+       hidden style="display:none">
+    <div class="modal" id="modal-evidencias">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-evidencias-title">Evidencias</h3>
+        <button class="modal__close" id="modal-evidencias-close" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal__form">
+        <p class="evidencias-task-name" id="evidencias-task-name"></p>
+
+        <div class="evidencias-upload" id="evidencias-upload">
+          <label class="evidencias-upload__label" for="evidencias-file-input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+              <path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/>
+            </svg>
+            <span>Agregar fotos o archivos</span>
+            <small>JPG, PNG, PDF, Word o Excel · máx. 10MB c/u · hasta 5 a la vez</small>
+          </label>
+          <input type="file" id="evidencias-file-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" multiple hidden />
+        </div>
+
+        <div class="evidencias-grid" id="evidencias-grid">
+          <!-- Se llena dinámicamente -->
+        </div>
+        <p class="evidencias-empty" id="evidencias-empty" hidden>Aún no hay evidencias en esta tarea.</p>
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="btn-secondary" id="modal-evidencias-cerrar">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Crear / Editar Usuario -->
+  <div class="modal-backdrop" id="modal-user-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-user-title"
+       hidden style="display:none">
+    <div class="modal" id="modal-user">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-user-title">Crear Usuario</h3>
+        <button class="modal__close" id="modal-user-close" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="modal__form" id="user-form" novalidate>
+        <input type="hidden" id="user-edit-id" value="" />
+        <div class="modal__grid">
+          <div class="mform-group">
+            <label class="mform-label" for="user-name">Nombre completo *</label>
+            <input type="text" id="user-name" class="mform-input" placeholder="ej. Ana Rodríguez" required />
+            <span class="mform-error" id="err-user-name"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="user-employee-num">Número de empleado *</label>
+            <input type="text" id="user-employee-num" class="mform-input" placeholder="ej. E-00120" required />
+            <span class="mform-error" id="err-user-num"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="user-email">Correo electrónico *</label>
+            <input type="email" id="user-email" class="mform-input" placeholder="correo@herradura.mx" required />
+            <span class="mform-error" id="err-user-email"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="user-position">Cargo / Puesto *</label>
+            <input type="text" id="user-position" class="mform-input" placeholder="ej. Jefe de Almacén" required />
+            <span class="mform-error" id="err-user-pos"></span>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="user-role">Rol del sistema</label>
+            <select id="user-role" class="mform-input mform-select">
+              <option value="user">Usuario</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+          <div class="mform-group">
+            <label class="mform-label" for="user-status">Estado</label>
+            <select id="user-status" class="mform-input mform-select">
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+          <div class="mform-group mform-group--full" id="group-user-password">
+            <label class="mform-label" for="user-password">
+              Contraseña
+              <span id="user-password-hint" style="font-weight:400;color:var(--color-gray-400);font-size:0.72rem;margin-left:6px;">(dejar en blanco para mantener la actual)</span>
+            </label>
+            <div style="position:relative;">
+              <input type="password" id="user-password" class="mform-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" style="padding-right:44px;" />
+              <button type="button" id="user-pw-toggle" aria-label="Mostrar contraseña"
+                      style="position:absolute;right:0;top:0;height:42px;width:42px;background:transparent;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-gray-400);">
+                <svg id="user-pw-eye-show" viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;">
+                  <path d="M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6c-.73-2.89-4-6-9-6z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                  <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+                <svg id="user-pw-eye-hide" viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;display:none;">
+                  <path d="M2 2l16 16M10 4C5 4 1.73 7.11 1 10c.73 2.89 4 6 9 6s8.27-3.11 9-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+                  <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <span class="mform-error" id="err-user-password"></span>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn-secondary" id="modal-user-cancel">Cancelar</button>
+          <button type="submit"  class="btn-primary"  id="modal-user-submit">Guardar Usuario</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Confirmación genérica -->
+  <div class="modal-backdrop modal-backdrop--sm" id="modal-confirm-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-confirm-title"
+       hidden style="display:none">
+    <div class="modal modal--sm" id="modal-confirm">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-confirm-title">Confirmar</h3>
+        <button class="modal__close" id="modal-confirm-close" aria-label="Cerrar" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <p class="modal__body-text" id="confirm-message"></p>
+      <div class="mform-group" id="confirm-password-group" hidden style="margin-top:12px;">
+        <label class="mform-label" for="confirm-password">Confirma tu contraseña</label>
+        <input type="password" id="confirm-password" class="mform-input" placeholder="Tu contraseña" autocomplete="current-password" />
+        <span class="mform-error" id="err-confirm-password"></span>
+      </div>
+      <div class="modal__actions">
+        <button class="btn-secondary" id="modal-confirm-cancel">Cancelar</button>
+        <button class="btn-danger"    id="modal-confirm-ok">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MODAL: VISTA PREVIA DEL PDF (nuevo)
+       ============================================================ -->
+  <div class="modal-backdrop" id="modal-rpt-preview"
+       role="dialog" aria-modal="true" aria-labelledby="rpt-modal-title"
+       hidden style="display:none">
+    <div class="modal modal--rpt">
+      <div class="modal__header">
+        <h3 class="modal__title" id="rpt-modal-title">Vista Previa del Reporte</h3>
+        <button class="modal__close" id="rpt-modal-close" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="rpt-preview-actions">
+        <button class="btn-primary" id="rpt-download-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Descargar PDF
+        </button>
+        <button class="btn-secondary" id="rpt-modal-close2">Cerrar</button>
+      </div>
+
+      <!-- Contenido capturado por html2canvas -->
+      <div id="rpt-pdf-content" class="rpt-pdf-preview">
+
+        <div class="rpt-pdf-header">
+          <div class="rpt-pdf-logo">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <circle cx="20" cy="20" r="19" stroke="#E8B832" stroke-width="2"/>
+              <path d="M10 28 L20 10 L30 28" stroke="#E8B832" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M13 23 L27 23" stroke="#E8B832" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <div class="rpt-pdf-company">La Herradura</div>
+              <div class="rpt-pdf-tagline">Sistema de Administración de Tareas</div>
+            </div>
+          </div>
+          <div class="rpt-pdf-doc-info">
+            <div class="rpt-pdf-doc-title">Reporte Mensual de Actividades</div>
+            <div class="rpt-pdf-doc-id" id="rpt-pdf-doc-id">—</div>
+          </div>
+        </div>
+
+        <div class="rpt-pdf-divider"></div>
+
+        <div class="rpt-pdf-meta-grid" id="rpt-pdf-meta"></div>
+
+        <div class="rpt-pdf-divider"></div>
+
+        <h3 class="rpt-pdf-section-title">Resumen Estadístico</h3>
+        <div class="rpt-pdf-kpi-row" id="rpt-pdf-kpis"></div>
+
+        <div class="rpt-pdf-divider"></div>
+
+        <h3 class="rpt-pdf-section-title">Lista de Tareas del Período</h3>
+        <table class="rpt-pdf-table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Responsable</th>
+              <th>Estado</th>
+              <th>Fecha límite</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-pdf-tasks"></tbody>
+        </table>
+
+        <div class="rpt-pdf-footer">
+          <span>La Herradura © <span id="rpt-pdf-year"></span> — Generado automáticamente</span>
+          <span id="rpt-pdf-gen-date">—</span>
+        </div>
+
+      </div><!-- /rpt-pdf-content -->
+    </div>
+  </div>
+
+  <!-- Modal: Cambiar mi contraseña -->
+  <div class="modal-backdrop modal-backdrop--sm" id="modal-profile-password-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-profile-password-title"
+       hidden style="display:none">
+    <div class="modal modal--sm" id="modal-profile-password">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-profile-password-title">Cambiar Contraseña</h3>
+        <button class="modal__close" id="modal-profile-password-close" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="modal__form" id="profile-password-form" novalidate>
+        <div class="modal__grid">
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="profile-pw-actual">Contraseña actual *</label>
+            <input type="password" id="profile-pw-actual" class="mform-input" autocomplete="current-password" required />
+            <span class="mform-error" id="err-profile-pw-actual"></span>
+          </div>
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="profile-pw-nueva">Contraseña nueva *</label>
+            <input type="password" id="profile-pw-nueva" class="mform-input" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required />
+            <span class="mform-error" id="err-profile-pw-nueva"></span>
+          </div>
+          <div class="mform-group mform-group--full">
+            <label class="mform-label" for="profile-pw-confirmar">Confirmar contraseña nueva *</label>
+            <input type="password" id="profile-pw-confirmar" class="mform-input" autocomplete="new-password" required />
+            <span class="mform-error" id="err-profile-pw-confirmar"></span>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn-secondary" id="modal-profile-password-cancel">Cancelar</button>
+          <button type="submit"  class="btn-primary"  id="profile-pw-submit">Guardar Contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container" aria-live="polite" role="status"></div>
+
+  <!-- Pantalla de carga global (p. ej. al generar/descargar un PDF) -->
+  <div class="global-loading-overlay" id="global-loading-overlay" hidden aria-live="assertive" aria-busy="true" role="status">
+    <div class="global-loading__box">
+      <span class="global-loading__spinner" aria-hidden="true"></span>
+      <p class="global-loading__text">Generando PDF…</p>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/dashboard.js"></script>
+</body>
+</html>
