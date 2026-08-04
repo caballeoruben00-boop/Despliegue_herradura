@@ -1,5 +1,5 @@
 const prisma = require('../prismaClient');
-const { enviarCorreoNotificacion } = require('./email.service');
+const { enviarPush } = require('./push.service');
 
 // ══════════════════════════════════════════════════════════════
 // REGISTRO DE CONEXIONES SSE (Server-Sent Events)
@@ -75,7 +75,9 @@ async function crearNotificacion({ usuarioId, tipo = 'GENERAL', titulo, mensaje,
       if (usuario?.email) {
         // No se espera (fire-and-forget real vía .catch) para no retrasar
         // la respuesta de la petición que originó la notificación.
-        enviarCorreoNotificacion(usuario, { titulo, mensaje })
+        enviarCorreoNotificacion(usuario, { titulo, mensaje 
+                                          enviarPush(usuarioId, { titulo, mensaje, tareaId })
+      .catch(err => console.error('❌ Error enviando push:', err.message));
           .catch(err => console.error('❌ Error enviando correo de notificación:', err.message));
       }
     }
