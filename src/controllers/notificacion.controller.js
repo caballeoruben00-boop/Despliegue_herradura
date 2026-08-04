@@ -142,6 +142,42 @@ const streamNotificaciones = async (req, res) => {
     quitarCliente(usuario.id, res);
   });
 };
+const obtenerVapidPublicKey = (req, res) => {
+  const { vapidPublicKey } = require('../services/push.service');
+  if (!vapidPublicKey) return res.status(503).json({ error: 'Push no configurado' });
+  res.json({ publicKey: vapidPublicKey });
+};
+
+const guardarSuscripcionPush = async (req, res) => {
+  const usuarioId = req.usuario.id;
+  const { endpoint, keys } = req.body;
+  if (!endpoint || !keys?.p256dh || !keys?.auth) {
+    return res.status(400).json({ error: 'Suscripción push inválida' });
+  }
+  try {
+    await prisma.pushSubscription.upsert({
+      where: { endpoint },
+      update: { usuarioId, p256dh: keys.p256dh, auth: keys.auth },
+      create: { usuarioId, endpoint, p256dh: keys.p256dh, auth: keys.auth },
+    });
+    res.status(201).json({ mensaje: 'Suscripción guardada' });
+  } catch (error) {
+    console.error('Error guardarSuscripcionPush:', error.message);
+    res.status(500).json({ error: 'Error al guardar la suscripción' });
+  }
+};
+
+const eliminarSuscripcionPush = async (req, res) => {
+  const { endpoint } = req.body;
+  if (!endpoint) return res.status(400).json({ error: 'Falta endpoint' });
+  try {
+    await prisma.pushSubscription.deleteMany({ where: { endpoint, usuarioId: req.usuario.id } });
+    res.json({ mensaje: 'Suscripción eliminada' });
+  } catch (error) {
+    console.error('Error eliminarSuscripcionPush:', error.message);
+    res.status(500).json({ error: 'Error al eliminar la suscripción' });
+  }
+};
 
 module.exports = {
   listarNotificaciones,
@@ -150,4 +186,8 @@ module.exports = {
   marcarTodasLeidas,
   eliminarNotificacion,
   streamNotificaciones,
+  obtenerVapidPublicKey,
+  guardarSuscripcionPush,
+  eliminarSuscripcionPush,
 };
+
