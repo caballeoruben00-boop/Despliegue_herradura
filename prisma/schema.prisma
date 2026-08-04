@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+model Usuario {
+  id               Int      @id @default(autoincrement())
+  nombre           String
+  username         String   @unique
+  numeroEmpleado   String   @unique
+  email            String   @unique
+  cargo            String?
+  password         String
+  rol              Rol      @default(EMPLEADO)
+  activo           Boolean  @default(true)
+  creadoEn         DateTime @default(now())
+
+  tareasAsignadas  Tarea[]   @relation("TareaAsignada")
+  tareasCreadas    Tarea[]   @relation("TareaCreada")
+  reportes         Reporte[]
+  notificaciones   Notificacion[]
+  evidencias       Evidencia[]
+}
+model Tarea {
+  id              Int        @id @default(autoincrement())
+  nombre          String
+  descripcion     String?
+  fechaInicio     DateTime
+  fechaFin        DateTime
+  hora            String
+  prioridad       Prioridad  @default(MEDIA)
+  estado          Estado     @default(PENDIENTE)
+  creadoEn        DateTime   @default(now())
+  completadaEn    DateTime?
+
+  asignadoA       Usuario    @relation("TareaAsignada", fields: [asignadoAId], references: [id])
+  asignadoAId     Int
+
+  creadoPor       Usuario    @relation("TareaCreada", fields: [creadoPorId], references: [id])
+  creadoPorId     Int
+
+  notificaciones  Notificacion[]
+  evidencias      Evidencia[]
+}
+
+enum Rol {
+  ADMIN
+  EMPLEADO
+}
+enum Prioridad {
+  ALTA
+  MEDIA
+  BAJA
+}
+
+enum Estado {
+  PENDIENTE
+  COMPLETADA
+  ATRASADA
+}
+model Reporte {
+  id              Int      @id @default(autoincrement())
+  mes             Int
+  anio            Int
+  totalTareas     Int      @default(0)
+  completadas     Int      @default(0)
+  pendientes      Int      @default(0)
+  atrasadas       Int      @default(0)
+  completadasATiempo         Int    @default(0)
+  tiempoPromedioResolucionHrs Float?
+  creadoEn        DateTime @default(now())
+
+  empleado        Usuario? @relation(fields: [empleadoId], references: [id])
+  empleadoId      Int?
+}
+
+// ══════════════════════════════════════════════════════════════
+// NOTIFICACIONES — alertas en tiempo real (SSE) + correo + historial
+// ══════════════════════════════════════════════════════════════
+enum TipoNotificacion {
+  TAREA_ASIGNADA
+  TAREA_ACTUALIZADA
+  TAREA_PROXIMA_VENCER
+  TAREA_VENCIDA
+  TAREA_COMPLETADA
+  TAREA_ELIMINADA
+  GENERAL
+}
+
+model Notificacion {
+  id          Int              @id @default(autoincrement())
+  tipo        TipoNotificacion @default(GENERAL)
+  titulo      String
+  mensaje     String
+  leida       Boolean          @default(false)
+  creadoEn    DateTime         @default(now())
+
+  usuario     Usuario          @relation(fields: [usuarioId], references: [id])
+  usuarioId   Int
+
+  // Si la tarea relacionada se elimina, la notificación se conserva en el
+  // historial pero pierde la referencia (no se borra en cascada).
+  tarea       Tarea?           @relation(fields: [tareaId], references: [id], onDelete: SetNull)
+  tareaId     Int?
+
+  @@index([usuarioId, leida])
+  @@index([usuarioId, creadoEn])
+}
+
+// ══════════════════════════════════════════════════════════════
+// EVIDENCIAS — fotos y archivos adjuntos a una tarea
+// ══════════════════════════════════════════════════════════════
+model Evidencia {
+  id             Int      @id @default(autoincrement())
+  nombreOriginal String
+  nombreArchivo  String   // nombre único con el que se guarda en disco
+  rutaArchivo    String   // ruta relativa servida por /uploads/evidencias/...
+  tipoMime       String
+  tamano         Int      // bytes
+  creadoEn       DateTime @default(now())
+
+  tarea          Tarea    @relation(fields: [tareaId], references: [id], onDelete: Cascade)
+  tareaId        Int
+
+  subidoPor      Usuario  @relation(fields: [subidoPorId], references: [id])
+  subidoPorId    Int
+
+  @@index([tareaId])
+}
