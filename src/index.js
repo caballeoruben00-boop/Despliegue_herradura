@@ -20,6 +20,9 @@ app.use(express.json());
 // Archivos de evidencias (fotos/documentos adjuntos a tareas)
 app.use('/uploads/evidencias', express.static(path.join(__dirname, 'uploads', 'evidencias')));
 
+// Frontend estático (carpeta /frontend en la raíz del repo)
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/tareas', tareaRoutes);
@@ -27,7 +30,7 @@ app.use('/api/reportes', reporteRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
 
 app.get('/', (req, res) => {
-  res.json({ mensaje: 'API Herradura funcionando correctamente' });
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // Manejo de errores de Multer (archivo muy grande, tipo no permitido, etc.)
