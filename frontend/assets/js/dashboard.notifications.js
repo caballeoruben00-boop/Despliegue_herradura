@@ -11,7 +11,7 @@ import {
   eliminarNotificacion, abrirStreamNotificaciones,
 } from './api.notificaciones.js';
 import { refreshTasks } from './dashboard.js';
-
+import { activarNotificacionesPush, pushYaActivo } from './push.js';
 const PAGE_SIZE = 30;
 const DROPDOWN_MAX = 8;
 
@@ -207,6 +207,13 @@ async function loadMore() {
 /* ══════════════════════════════════════════════════════════════
    CARGA INICIAL + SSE
 ══════════════════════════════════════════════════════════════ */
+async function actualizarBotonPush() {
+  const btn = $('btn-activar-push');
+  if (!btn) return;
+  const activo = await pushYaActivo();
+  btn.textContent = activo ? '🔔 Notificaciones activadas' : '🔔 Activar notificaciones';
+  btn.disabled = activo;
+}
 export async function initNotifications() {
   try {
     const { notificaciones, noLeidas } = await listarNotificaciones({ limit: PAGE_SIZE });
@@ -217,6 +224,7 @@ export async function initNotifications() {
     console.error('Error cargando notificaciones:', e.message);
   }
   renderAllNotifUI();
+  actualizarBotonPush();
 
   if (eventSource) eventSource.close();
   eventSource = abrirStreamNotificaciones(n => {
@@ -241,6 +249,15 @@ export async function initNotifications() {
    EVENTOS
 ══════════════════════════════════════════════════════════════ */
 export function attachNotifEvents() {
+  $('btn-activar-push')?.addEventListener('click', async () => {
+    const resultado = await activarNotificacionesPush();
+    if (resultado.ok) {
+      toast('🔔 Notificaciones activadas', 'success');
+      actualizarBotonPush();
+    } else {
+      toast('❌ ' + resultado.motivo, 'error');
+    }
+  });
   $('btn-notif-bell')?.addEventListener('click', e => {
     e.stopPropagation();
     store.notifDropdownOpen ? closeDropdown() : openDropdown();
