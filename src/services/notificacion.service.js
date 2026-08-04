@@ -1,4 +1,5 @@
 const prisma = require('../prismaClient');
+const { enviarCorreoNotificacion } = require('./email.service');
 const { enviarPush } = require('./push.service');
 
 // ══════════════════════════════════════════════════════════════
@@ -46,10 +47,11 @@ const TIPOS_CON_CORREO = new Set([
 
 /**
  * Crea una notificación para un usuario: la guarda en la BD (historial),
- * la empuja en tiempo real por SSE si el usuario está conectado, y —
- * para ciertos tipos— dispara un correo. Nunca lanza: los fallos de
- * correo o de push no deben tumbar la operación que la originó
- * (crear/editar/completar una tarea).
+ * la empuja en tiempo real por SSE si el usuario está conectado, manda
+ * una notificación push al sistema operativo, y — para ciertos tipos —
+ * dispara un correo. Nunca lanza: los fallos de correo o de push no
+ * deben tumbar la operación que la originó (crear/editar/completar
+ * una tarea).
  *
  * @param {{
  *   usuarioId: number,
@@ -67,6 +69,9 @@ async function crearNotificacion({ usuarioId, tipo = 'GENERAL', titulo, mensaje,
 
     enviarSSE(usuarioId, 'notificacion', notificacion);
 
+    enviarPush(usuarioId, { titulo, mensaje, tareaId })
+      .catch(err => console.error('❌ Error enviando push:', err.message));
+
     if (TIPOS_CON_CORREO.has(tipo)) {
       const usuario = await prisma.usuario.findUnique({
         where: { id: usuarioId },
@@ -75,9 +80,7 @@ async function crearNotificacion({ usuarioId, tipo = 'GENERAL', titulo, mensaje,
       if (usuario?.email) {
         // No se espera (fire-and-forget real vía .catch) para no retrasar
         // la respuesta de la petición que originó la notificación.
-        enviarCorreoNotificacion(usuario, { titulo, mensaje 
-                                          enviarPush(usuarioId, { titulo, mensaje, tareaId })
-      .catch(err => console.error('❌ Error enviando push:', err.message));
+        enviarCorreoNotificacion(usuario, { titulo, mensaje })
           .catch(err => console.error('❌ Error enviando correo de notificación:', err.message));
       }
     }
