@@ -37,7 +37,13 @@ export async function login(username, password) {
  * Cierra la sesión del usuario actual:
  * elimina token y datos de sessionStorage y redirige al login.
  */
-export function logout() {
+export async function logout() {
+  try {
+    await apiRequest('/auth/logout', { method: 'POST' });
+  } catch {
+    // Si falla (sin conexión, token ya vencido, etc.) igual limpiamos
+    // la sesión local — lo importante es que el usuario salga.
+  }
   sessionStorage.removeItem('lh_token');
   sessionStorage.removeItem('lh_user');
   window.location.href = 'index.html';
