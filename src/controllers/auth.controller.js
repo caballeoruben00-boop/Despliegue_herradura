@@ -1,16 +1,15 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const prisma = require('../prismaClient');
 
+const MAX_SESIONES_ACTIVAS = 2;
+
 const login = async (req, res) => {
-  // El campo puede llegar como "username" (compatibilidad con el frontend
-  // actual) o como "identifier". Acepta usuario, número de empleado o correo.
   const identificador = (req.body.identifier ?? req.body.username ?? '').trim();
   const { password } = req.body;
 
   try {
-    console.log('Intento de login con identificador:', identificador);
-
     if (!identificador || !password) {
       return res.status(400).json({ error: 'Usuario y contraseña son obligatorios' });
     }
@@ -25,39 +24,48 @@ const login = async (req, res) => {
       },
     });
 
-    if (!usuario) {
-      console.log('❌ Usuario no existe:', identificador);
-      return res.status(401).json({ error: 'Credenciales inválidas' });
-    }
-
-    console.log('✓ Usuario encontrado:', usuario.username);
-    console.log('Estado activo:', usuario.activo);
-
-    if (!usuario.activo) {
-      console.log('❌ Usuario inactivo:', usuario.username);
+    if (!usuario || !usuario.activo) {
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     const passwordValida = await bcrypt.compare(password, usuario.password);
-    console.log('Contraseña válida:', passwordValida);
-
     if (!passwordValida) {
-      console.log('❌ Contraseña incorrecta para:', usuario.username);
       return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign(
-      { 
-        id: usuario.id, 
-        username: usuario.username, 
-        rol: usuario.rol, 
-        nombre: usuario.nombre,
+    // Limpia sesiones ya vencidas (más viejas que la duración del
+    // token, 8h) para que no cuenten falsamente contra el límite.
+    await prisma.sesionActiva.deleteMany({
+      where: {
+        usuarioId: usuario.id,
+        ultimaActividad: { lt: new Date(Date.now() - 8 * 60 * 60 * 1000) },
       },
+    });
+
+    // ── Límite de 2 sesiones activas simultáneas ─────────────────
+    // Si ya hay 2 dispositivos conectados, se cierra el más antiguo
+    // (el de actividad menos reciente) para dejar entrar este nuevo.
+    const sesiones = await prisma.sesionActiva.findMany({
+      where: { usuarioId: usuario.id },
+      orderBy: { ultimaActividad: 'asc' },
+    });
+    if (sesiones.length >= MAX_SESIONES_ACTIVAS) {
+      const aEliminar = sesiones.slice(0, sesiones.length - MAX_SESIONES_ACTIVAS + 1);
+      await prisma.sesionActiva.deleteMany({
+        where: { id: { in: aEliminar.map(s => s.id) } },
+      });
+    }
+
+    const jti = crypto.randomUUID();
+    const dispositivo = (req.headers['user-agent'] || '').slice(0, 200);
+
+    const token = jwt.sign(
+      { id: usuario.id, username: usuario.username, rol: usuario.rol, nombre: usuario.nombre, jti },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 
-    console.log('✓ Login exitoso para:', usuario.username);
+    await prisma.sesionActiva.create({ data: { usuarioId: usuario.id, jti, dispositivo } });
 
     res.json({
       token,
@@ -72,9 +80,22 @@ const login = async (req, res) => {
 
   } catch (error) {
     console.error('Error login:', error.message);
-    console.error('Stack:', error.stack);
     res.status(500).json({ error: 'Error en el servidor' });
   }
 };
 
-module.exports = { login };
+// Cierra la sesión actual: borra su registro de SesionActiva,
+// liberando ese "cupo" de dispositivo.
+const logout = async (req, res) => {
+  try {
+    if (req.usuario?.jti) {
+      await prisma.sesionActiva.deleteMany({ where: { jti: req.usuario.jti } });
+    }
+    res.json({ mensaje: 'Sesión cerrada' });
+  } catch (error) {
+    console.error('Error logout:', error.message);
+    res.status(500).json({ error: 'Error al cerrar sesión' });
+  }
+};
+
+module.exports = { login, logout };
