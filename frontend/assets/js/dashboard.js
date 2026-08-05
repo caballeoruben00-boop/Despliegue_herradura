@@ -151,6 +151,10 @@ function applyRolePermissions() {
   const navEmployees = $('nav-employees-item');
   if (navEmployees) navEmployees.style.display = canManageUsers ? '' : 'none';
 
+  // El botón/sección "Reportes" solo es visible para ADMIN.
+  const navReports = $('nav-reports-item');
+  if (navReports) navReports.style.display = isAdmin ? '' : 'none';
+
   if (canManageUsers) {
     const adminNav = $('admin-nav');
     if (adminNav) adminNav.style.display = '';
