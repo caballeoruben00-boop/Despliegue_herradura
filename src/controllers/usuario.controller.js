@@ -258,10 +258,21 @@ const eliminarUsuario = async (req, res) => {
     res.json({ mensaje: 'Usuario eliminado permanentemente' });
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ error: 'Usuario no encontrado' });
-    // P2003 = violación de llave foránea (el usuario tiene tareas/reportes asociados)
-    if (error.code === 'P2003') {
-      return res.status(409).json({ error: 'No se puede eliminar: el usuario tiene tareas o reportes asociados. Considera desactivarlo en su lugar.' });
+
+    // Violación de llave foránea (el usuario tiene tareas asignadas o
+    // creadas). Se detecta por varias vías porque, según el driver de
+    // Prisma en uso, el código de error puede llegar distinto.
+    const esErrorLlaveForanea =
+      error.code === 'P2003' ||
+      error.code === '23503' ||
+      /foreign key|violates.*constraint/i.test(error.message || '');
+
+    if (esErrorLlaveForanea) {
+      return res.status(409).json({
+        error: 'No se puede eliminar: este usuario tiene tareas asignadas o creadas. Desactívalo en su lugar para conservar el historial.',
+      });
     }
+
     console.error('Error eliminarUsuario:', error.message);
     res.status(500).json({ error: 'Error al eliminar usuario' });
   }
