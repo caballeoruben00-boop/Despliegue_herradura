@@ -23,6 +23,7 @@ model Usuario {
   notificaciones   Notificacion[]
   evidencias       Evidencia[]
 pushSubscriptions PushSubscription[]
+sesiones SesionActiva[]
 }
 model Tarea {
   id              Int        @id @default(autoincrement())
@@ -138,4 +139,14 @@ model PushSubscription {
   p256dh    String
   auth      String
   creadoEn  DateTime @default(now())
+}
+
+model SesionActiva {
+  id              Int      @id @default(autoincrement())
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId       Int
+  jti             String   @unique
+  dispositivo     String?
+  creadaEn        DateTime @default(now())
+  ultimaActividad DateTime @default(now())
 }
