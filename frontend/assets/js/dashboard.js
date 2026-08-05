@@ -95,6 +95,7 @@ function updateTasksBadge() {
 ══════════════════════════════════════════════════════════════ */
 window.navigateTo = function(sectionId) {
   if (sectionId === 'employees' && !canManageUsers) return; // solo ADMIN
+  if (sectionId === 'reports' && !isAdmin) return; // solo ADMIN// solo ADMIN
   $$('.content-section').forEach(s => s.classList.add('content-section--hidden'));
   $(`section-${sectionId}`)?.classList.remove('content-section--hidden');
   $$('.sidebar__nav-link').forEach(a => a.classList.remove('sidebar__nav-link--active'));
