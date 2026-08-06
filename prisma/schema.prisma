@@ -37,11 +37,11 @@ model Tarea {
   creadoEn        DateTime   @default(now())
   completadaEn    DateTime?
 
-  asignadoA       Usuario    @relation("TareaAsignada", fields: [asignadoAId], references: [id])
-  asignadoAId     Int
+asignadoA       Usuario?   @relation("TareaAsignada", fields: [asignadoAId], references: [id], onDelete: SetNull)
+  asignadoAId     Int?
 
-  creadoPor       Usuario    @relation("TareaCreada", fields: [creadoPorId], references: [id])
-  creadoPorId     Int
+  creadoPor       Usuario?   @relation("TareaCreada", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  creadoPorId     Int?
 
   notificaciones  Notificacion[]
   evidencias      Evidencia[]
@@ -99,7 +99,7 @@ model Notificacion {
   leida       Boolean          @default(false)
   creadoEn    DateTime         @default(now())
 
-  usuario     Usuario          @relation(fields: [usuarioId], references: [id])
+usuario     Usuario          @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
   usuarioId   Int
 
   // Si la tarea relacionada se elimina, la notificación se conserva en el
@@ -126,8 +126,8 @@ model Evidencia {
   tarea          Tarea    @relation(fields: [tareaId], references: [id], onDelete: Cascade)
   tareaId        Int
 
-  subidoPor      Usuario  @relation(fields: [subidoPorId], references: [id])
-  subidoPorId    Int
+subidoPor      Usuario? @relation(fields: [subidoPorId], references: [id], onDelete: SetNull)
+  subidoPorId    Int?
 
   @@index([tareaId])
 }
