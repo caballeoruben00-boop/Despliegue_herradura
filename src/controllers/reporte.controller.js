@@ -44,7 +44,7 @@ function rangoFechas(anioN, mesN) {
 // la ubicación del archivo.
 function cargarLogoBase64() {
   const rutas = [
-    path.join(__dirname, '../../frontend/assets/img/favicon-512x512.png'),
+    path.join(__dirname, '../../frontend/assets/img/logo_nuevo.jpg'),
     path.join(__dirname, '../assets/images.jpg'),
     path.join(__dirname, '../assets/logo.jpg'),
     path.join(__dirname, '../assets/logo.png'),
