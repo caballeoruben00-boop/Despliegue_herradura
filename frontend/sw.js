@@ -1,4 +1,4 @@
-/* Service Worker — La Herradura
+/* Service Worker — Comercializadora de Granos La Herradura
    Muestra notificaciones del sistema aunque la pestaña esté cerrada,
    y abre/enfoca la app al hacer clic en ellas. */
 
@@ -14,7 +14,7 @@ self.addEventListener('push', (event) => {
   let datos = {};
   try { datos = event.data ? event.data.json() : {}; } catch { /* payload no era JSON */ }
 
-  const titulo = datos.titulo || 'La Herradura';
+  const titulo = datos.titulo || 'Comercializadora de Granos La Herradura';
   const opciones = {
     body: datos.mensaje || '',
     icon: '/assets/img/favicon-192x192.png',

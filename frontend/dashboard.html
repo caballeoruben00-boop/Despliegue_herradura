@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <!-- ============================================================
-       La Herradura — Panel Principal del Sistema
+       Comercializadora de Granos La Herradura — Panel Principal del Sistema
        dashboard.html — v3.0 (+ Módulo de Reportes)
        ============================================================ -->
   <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
   <!-- Coincide con el fondo de la topbar para que la barra de estado del
        teléfono no corte visualmente el encabezado -->
   <meta name="theme-color" content="#FFFFFF" />
-  <title>La Herradura · Panel Principal</title>
+  <title>Comercializadora de Granos La Herradura · Panel Principal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -39,10 +39,10 @@
 
     <div class="sidebar__brand">
       <div class="sidebar__logo">
-        <img src="assets/img/logo.png" alt="Logo La Herradura" class="sidebar__logo-img" />
+        <img src="assets/img/logo.png" alt="Logo Comercializadora de Granos La Herradura" class="sidebar__logo-img" />
       </div>
       <div class="sidebar__brand-text">
-        <span class="sidebar__brand-name">La Herradura</span>
+        <span class="sidebar__brand-name">Comercializadora de Granos La Herradura</span>
         <span class="sidebar__brand-sub">Sistema Administrativo</span>
       </div>
     </div>
@@ -170,7 +170,7 @@
 
       <div class="topbar__title">
         <h1 class="topbar__title-text" id="page-title">Panel General</h1>
-        <span class="topbar__title-crumb" id="page-crumb">La Herradura · Sistema de Administración</span>
+        <span class="topbar__title-crumb" id="page-crumb">Comercializadora de Granos La Herradura · Sistema de Administración</span>
       </div>
 
       <div class="topbar__actions">
@@ -718,29 +718,33 @@
             <select id="task-assignee" class="mform-input mform-select">
               <option value="">— Selecciona usuario —</option>
             </select>
+            <span class="mform-hint">Becario o empleado del área responsable de realizar esta tarea.</span>
           </div>
           <div class="mform-group mform-group--full">
-            <label class="mform-label" for="task-title">Tarea *</label>
-            <input type="text" id="task-title" class="mform-input" placeholder="ej. Revisión de caja chica" required />
+            <label class="mform-label" for="task-title">Nombre de la tarea *</label>
+            <input type="text" id="task-title" class="mform-input" placeholder="ej. Revisión de caja chica" maxlength="120" required />
+            <span class="mform-hint">Título breve que identifique la tarea (máx. 120 caracteres).</span>
             <span class="mform-error" id="err-task-title"></span>
           </div>
           <div class="mform-group">
             <label class="mform-label" for="task-report-date">Fecha de reporte *</label>
             <input type="date" id="task-report-date" class="mform-input" required />
+            <span class="mform-hint">Día en que se registra o inicia la tarea.</span>
             <span class="mform-error" id="err-task-report-date"></span>
           </div>
           <div class="mform-group">
             <label class="mform-label" for="task-due">Fecha de término *</label>
             <input type="date" id="task-due" class="mform-input" required />
+            <span class="mform-hint">Fecha límite para entregar o completar la tarea.</span>
             <span class="mform-error" id="err-task-due"></span>
           </div>
           <div class="mform-group">
             <label class="mform-label" for="task-priority">Prioridad *</label>
             <select id="task-priority" class="mform-input mform-select" required>
               <option value="">— Selecciona prioridad —</option>
-              <option value="high">🔴 Alta</option>
-              <option value="medium">🟡 Media</option>
-              <option value="low">🟢 Baja</option>
+              <option value="high">🔴 Alta — atender lo antes posible</option>
+              <option value="medium">🟡 Media — dentro del plazo normal</option>
+              <option value="low">🟢 Baja — sin urgencia</option>
             </select>
             <span class="mform-error" id="err-task-priority"></span>
           </div>
@@ -750,10 +754,12 @@
               <option value="pending">⏳ Pendiente</option>
               <option value="done">✅ Completada</option>
             </select>
+            <span class="mform-hint">Al crear una tarea normalmente queda "Pendiente".</span>
           </div>
           <div class="mform-group mform-group--full">
             <label class="mform-label" for="task-desc">Especificaciones de la tarea</label>
-            <textarea id="task-desc" class="mform-input mform-textarea" placeholder="Describe con detalle las especificaciones o requerimientos de la tarea…" rows="4"></textarea>
+            <textarea id="task-desc" class="mform-input mform-textarea" placeholder="Describe con detalle las especificaciones o requerimientos de la tarea (materiales, pasos a seguir, resultado esperado, etc.)" rows="4" maxlength="1000"></textarea>
+            <span class="mform-hint">Opcional. Entre más detalle, más claro será para quien la realice.</span>
           </div>
         </div>
         <div class="modal__actions">
@@ -934,7 +940,7 @@
               <path d="M13 23 L27 23" stroke="#E8B832" stroke-width="2" stroke-linecap="round"/>
             </svg>
             <div>
-              <div class="rpt-pdf-company">La Herradura</div>
+              <div class="rpt-pdf-company">Comercializadora de Granos La Herradura</div>
               <div class="rpt-pdf-tagline">Sistema de Administración de Tareas</div>
             </div>
           </div>
@@ -969,7 +975,7 @@
         </table>
 
         <div class="rpt-pdf-footer">
-          <span>La Herradura © <span id="rpt-pdf-year"></span> — Generado automáticamente</span>
+          <span>Comercializadora de Granos La Herradura © <span id="rpt-pdf-year"></span> — Generado automáticamente</span>
           <span id="rpt-pdf-gen-date">—</span>
         </div>
 

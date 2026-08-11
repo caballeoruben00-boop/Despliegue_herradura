@@ -6,6 +6,12 @@ const fs        = require('fs');
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+// Zona horaria de la empresa. creadoEn/completadaEn se guardan en la BD
+// como instantes reales (UTC internamente), así que aquí es donde se
+// convierten a la hora local para que el PDF siempre muestre la hora
+// correcta sin importar en qué zona horaria corra el servidor.
+const ZONA_HORARIA = 'America/Mexico_City';
+
 const ESTADO_LABEL = {
   COMPLETADA: 'Completada',
   PENDIENTE:  'Pendiente',
@@ -42,7 +48,6 @@ function cargarLogoBase64() {
     path.join(__dirname, '../assets/logo.jpg'),
     path.join(__dirname, '../assets/logo.png'),
     path.join(__dirname, '../../assets/img/logo.png'),
-    path.join(__dirname, '../../assets/img/Logo_1.png'),
   ];
 
   for (const ruta of rutas) {
@@ -65,10 +70,24 @@ function fechaCorta(fecha) {
   return fecha ? new Date(fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : '—';
 }
 
+// ─── Utilidad: formatea fecha + hora (dd/mm/aaaa, hh:mm a. m.) o '—' ─
+// A diferencia de fechaCorta, esta SÍ convierte a la zona horaria local
+// (ZONA_HORARIA) porque creadoEn/completadaEn son marcas de tiempo reales
+// (el momento exacto en que se creó o completó la tarea), no fechas puras.
+function fechaHoraCorta(fecha) {
+  if (!fecha) return '—';
+  const d = new Date(fecha);
+  const fechaTxt = d.toLocaleDateString('es-MX', { timeZone: ZONA_HORARIA });
+  const horaTxt  = d.toLocaleTimeString('es-MX', {
+    timeZone: ZONA_HORARIA, hour: '2-digit', minute: '2-digit',
+  });
+  return `${fechaTxt}, ${horaTxt}`;
+}
+
 // ─── Utilidad: genera las filas de la tabla de resumen de tareas ─
 function generarFilasTareas(tareas) {
   if (!tareas || tareas.length === 0) {
-    return `<tr><td colspan="6" class="tabla-vacia">No hay tareas registradas en este período.</td></tr>`;
+    return `<tr><td colspan="7" class="tabla-vacia">No hay tareas registradas en este período.</td></tr>`;
   }
 
   return tareas.map(t => {
@@ -82,7 +101,8 @@ function generarFilasTareas(tareas) {
         <td><span class="badge-estado ${estadoClase}">${ESTADO_LABEL[t.estado] ?? t.estado}</span></td>
         <td>${PRIORIDAD_LABEL[t.prioridad] ?? t.prioridad}</td>
         <td>${fechaCorta(t.fechaFin)}</td>
-        <td>${fechaCorta(t.completadaEn)}</td>
+        <td>${fechaHoraCorta(t.creadoEn)}</td>
+        <td>${fechaHoraCorta(t.completadaEn)}</td>
       </tr>`;
   }).join('');
 }
@@ -257,17 +277,25 @@ function generarHTML(reporte, logoSrc, fechaHora, tareas) {
   .mes-lbl { font-size:9px; color:#999; }
   .mes-legend { flex-direction:row; justify-content:center; gap:16px; margin-bottom:22px; }
 
-  .tabla-tareas { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  .tabla-tareas { width: 100%; border-collapse: collapse; font-size: 9.5px; table-layout: fixed; }
   .tabla-tareas thead { display: table-header-group; }
   .tabla-tareas th {
     background: #2d7a2d; color: white; text-align: left;
-    padding: 7px 8px; font-size: 10px; text-transform: uppercase;
+    padding: 7px 6px; font-size: 9px; text-transform: uppercase;
   }
-  .tabla-tareas td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+  .tabla-tareas td { padding: 6px 6px; border-bottom: 1px solid #eee; vertical-align: top;
+    word-wrap: break-word; overflow-wrap: break-word; }
   .tabla-tareas tbody tr { page-break-inside: avoid; }
   .tabla-tareas tbody tr:nth-child(even) { background: #fafafa; }
   .tabla-tareas .col-nombre { font-weight: 600; }
   .tabla-tareas .tabla-vacia { text-align: center; color: #999; padding: 16px; }
+  .tabla-tareas th:nth-child(1), .tabla-tareas td:nth-child(1) { width: 21%; }
+  .tabla-tareas th:nth-child(2), .tabla-tareas td:nth-child(2) { width: 15%; }
+  .tabla-tareas th:nth-child(3), .tabla-tareas td:nth-child(3) { width: 11%; }
+  .tabla-tareas th:nth-child(4), .tabla-tareas td:nth-child(4) { width: 9%; }
+  .tabla-tareas th:nth-child(5), .tabla-tareas td:nth-child(5) { width: 14%; }
+  .tabla-tareas th:nth-child(6), .tabla-tareas td:nth-child(6) { width: 15%; }
+  .tabla-tareas th:nth-child(7), .tabla-tareas td:nth-child(7) { width: 15%; }
 
   .badge-estado {
     display: inline-block; padding: 2px 8px; border-radius: 10px;
@@ -343,7 +371,7 @@ function generarHTML(reporte, logoSrc, fechaHora, tareas) {
   <img src="${logoSrc}"/>
   <div>
     <h1>Reporte ${esAnual ? 'Anual' : 'Mensual'} de Actividades</h1>
-    <p>Distribuidora de Semillas y Productos del Campo "La Herradura" S.A. de C.V.</p>
+    <p>Comercializadora de Granos La Herradura</p>
   </div>
 </div>
 
@@ -447,6 +475,7 @@ function generarHTML(reporte, logoSrc, fechaHora, tareas) {
           <th>Estado</th>
           <th>Prioridad</th>
           <th>Fecha límite</th>
+          <th>Creada el</th>
           <th>Completada el</th>
         </tr>
       </thead>
@@ -459,7 +488,7 @@ function generarHTML(reporte, logoSrc, fechaHora, tareas) {
 </div>
 
 <div class="footer">
-  <span>Distribuidora de Semillas y Productos del Campo "La Herradura" S.A. de C.V.</span>
+  <span>Comercializadora de Granos La Herradura</span>
   <span>Generado el: ${fechaHora}</span>
 </div>
 
@@ -605,8 +634,8 @@ const exportarReportePDF = async (req, res) => {
 
     const logoSrc   = cargarLogoBase64();
     const ahora     = new Date();
-    const fechaHora = ahora.toLocaleDateString('es-MX') + ' — ' +
-                      ahora.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    const fechaHora = ahora.toLocaleDateString('es-MX', { timeZone: ZONA_HORARIA }) + ' — ' +
+                      ahora.toLocaleTimeString('es-MX', { timeZone: ZONA_HORARIA, hour: '2-digit', minute: '2-digit' });
 
     const html = generarHTML(reporte, logoSrc, fechaHora, tareas);
 

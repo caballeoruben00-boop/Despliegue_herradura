@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — API Layer
+ *  Comercializadora de Granos La Herradura — API Layer
  *  api.notificaciones.js — Notificaciones en tiempo real + historial
  * ============================================================
  *

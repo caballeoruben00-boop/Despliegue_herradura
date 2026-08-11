@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — API Layer
+ *  Comercializadora de Granos La Herradura — API Layer
  *  api.js  — Punto de entrada único (barrel file)
  * ============================================================
  *

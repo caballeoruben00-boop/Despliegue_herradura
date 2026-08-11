@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard Core
+ * Comercializadora de Granos La Herradura — Dashboard Core
  * Sesión, estado compartido (store) y utilidades usadas por el resto
  * de los módulos del dashboard (tasks, users, reports).
  */

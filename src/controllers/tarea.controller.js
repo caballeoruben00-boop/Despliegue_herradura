@@ -35,6 +35,13 @@ const crearTarea = async (req, res) => {
         prioridad:   prioridad ?? 'MEDIA',
         asignadoAId: asignado,
         creadoPorId: req.usuario.id,
+        // Se marca explícitamente el instante real de creación (en vez de
+        // dejarlo solo al default de la BD) para que quede guardado con el
+        // mismo criterio que completadaEn: un instante absoluto, correcto
+        // sin importar la zona horaria configurada en el servidor de BD.
+        // Al mostrarse (p. ej. en el PDF de reportes) se convierte a la
+        // zona horaria local de la empresa.
+        creadoEn:    new Date(),
       },
       include: tareaInclude,
     });

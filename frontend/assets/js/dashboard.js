@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard v4.0
+ * Comercializadora de Granos La Herradura — Dashboard v4.0
  * Conectado al backend real (Express + Prisma + PostgreSQL)
  *
  * Este archivo es el punto de entrada / orquestador. La lógica se

@@ -48,9 +48,9 @@ function plantillaBienvenida({ nombre, username, numeroEmpleado, email, password
 
           <tr>
             <td style="background:linear-gradient(135deg,#c8860a,#2d7a2d);padding:28px 30px;text-align:center;">
-              ${logoUrl ? `<img src="${logoUrl}" alt="La Herradura" width="64" height="64" style="border-radius:8px;background:#fff;padding:4px;display:block;margin:0 auto 10px;" />` : ''}
-              <h1 style="color:#fff;font-size:20px;margin:0;">¡Bienvenido(a) a La Herradura!</h1>
-              <p style="color:#fff;opacity:.9;font-size:12px;margin:6px 0 0;">Distribuidora de Semillas y Productos del Campo "La Herradura" S.A. de C.V.</p>
+              ${logoUrl ? `<img src="${logoUrl}" alt="Comercializadora de Granos La Herradura" width="64" height="64" style="border-radius:8px;background:#fff;padding:4px;display:block;margin:0 auto 10px;" />` : ''}
+              <h1 style="color:#fff;font-size:20px;margin:0;">¡Bienvenido(a) a Comercializadora de Granos La Herradura!</h1>
+              <p style="color:#fff;opacity:.9;font-size:12px;margin:6px 0 0;">Comercializadora de Granos La Herradura</p>
             </td>
           </tr>
 
@@ -59,7 +59,7 @@ function plantillaBienvenida({ nombre, username, numeroEmpleado, email, password
               <p style="font-size:15px;margin:0 0 16px;">Hola <strong>${nombre}</strong>,</p>
               <p style="font-size:14px;line-height:1.6;margin:0 0 20px;color:#555;">
                 Se ha creado tu cuenta en el <strong>Sistema de Administración de Actividades</strong>
-                de La Herradura. Estos son tus datos de acceso:
+                de Comercializadora de Granos La Herradura. Estos son tus datos de acceso:
               </p>
 
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9f9f7;border-left:4px solid #c8860a;border-radius:6px;margin-bottom:20px;">
@@ -128,9 +128,9 @@ async function enviarCorreoBienvenida(usuario, passwordPlano) {
     });
 
     const payload = {
-      sender:      { email: BREVO_SENDER_EMAIL, name: BREVO_SENDER_NAME || 'La Herradura' },
+      sender:      { email: BREVO_SENDER_EMAIL, name: BREVO_SENDER_NAME || 'Comercializadora de Granos La Herradura' },
       to:          [{ email: usuario.email, name: usuario.nombre }],
-      subject:     'Bienvenido(a) a La Herradura — Datos de acceso',
+      subject:     'Bienvenido(a) a Comercializadora de Granos La Herradura — Datos de acceso',
       htmlContent: html,
     };
 
@@ -170,8 +170,8 @@ function plantillaNotificacion({ nombre, titulo, mensaje, logoUrl }) {
 
           <tr>
             <td style="background:linear-gradient(135deg,#c8860a,#2d7a2d);padding:24px 30px;text-align:center;">
-              ${logoUrl ? `<img src="${logoUrl}" alt="La Herradura" width="52" height="52" style="border-radius:8px;background:#fff;padding:4px;display:block;margin:0 auto 8px;" />` : ''}
-              <h1 style="color:#fff;font-size:18px;margin:0;">La Herradura · Notificación</h1>
+              ${logoUrl ? `<img src="${logoUrl}" alt="Comercializadora de Granos La Herradura" width="52" height="52" style="border-radius:8px;background:#fff;padding:4px;display:block;margin:0 auto 8px;" />` : ''}
+              <h1 style="color:#fff;font-size:18px;margin:0;">Comercializadora de Granos La Herradura · Notificación</h1>
             </td>
           </tr>
 
@@ -232,7 +232,7 @@ async function enviarCorreoNotificacion(usuario, { titulo, mensaje }) {
     });
 
     const payload = {
-      sender:      { email: BREVO_SENDER_EMAIL, name: BREVO_SENDER_NAME || 'La Herradura' },
+      sender:      { email: BREVO_SENDER_EMAIL, name: BREVO_SENDER_NAME || 'Comercializadora de Granos La Herradura' },
       to:          [{ email: usuario.email, name: usuario.nombre }],
       subject:     `🔔 ${titulo}`,
       htmlContent: html,

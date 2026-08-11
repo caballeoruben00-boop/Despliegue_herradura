@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — Ejemplo de uso de la API en dashboard.js
+ *  Comercializadora de Granos La Herradura — Ejemplo de uso de la API en dashboard.js
  * ============================================================
  *
  * Copia los fragmentos que necesites en tu dashboard.js existente.

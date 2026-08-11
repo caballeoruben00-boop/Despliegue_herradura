@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — Sistema de Administración
+ *  Comercializadora de Granos La Herradura — Sistema de Administración
  *  login.js  (v3 — conectado al backend)
  * ============================================================
  *

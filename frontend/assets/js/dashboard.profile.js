@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard: Perfil
+ * Comercializadora de Granos La Herradura — Dashboard: Perfil
  * Modal para que cualquier usuario autenticado (típicamente un ADMIN)
  * cambie su propia contraseña.
  */

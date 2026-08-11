@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard: Reportes
+ * Comercializadora de Granos La Herradura — Dashboard: Reportes
  * Filtros de reporte, KPIs, gráficas (dona/barras), historial y
  * generación/descarga de PDF.
  */

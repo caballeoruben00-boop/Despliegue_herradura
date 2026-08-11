@@ -1,5 +1,5 @@
 /**
- * La Herradura — Notificaciones push (escritorio y teléfono)
+ * Comercializadora de Granos La Herradura — Notificaciones push (escritorio y teléfono)
  */
 'use strict';
 

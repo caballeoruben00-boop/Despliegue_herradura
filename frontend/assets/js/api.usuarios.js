@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — API Layer
+ *  Comercializadora de Granos La Herradura — API Layer
  *  api.usuarios.js  — Gestión de usuarios (solo ADMIN)
  * ============================================================
  *

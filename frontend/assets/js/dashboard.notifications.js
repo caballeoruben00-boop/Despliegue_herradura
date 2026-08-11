@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard: Notificaciones
+ * Comercializadora de Granos La Herradura — Dashboard: Notificaciones
  * Campana con dropdown en tiempo real, historial completo con
  * filtro de no leídas y paginación, y conexión SSE al backend.
  */

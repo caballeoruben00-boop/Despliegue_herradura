@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard: Usuarios
+ * Comercializadora de Granos La Herradura — Dashboard: Usuarios
  * Directorio de usuarios (grid + filtros) y modal de creación/edición
  * de usuarios (alta, edición, desactivación, eliminación). Solo ADMIN.
  */

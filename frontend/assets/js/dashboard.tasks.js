@@ -1,5 +1,5 @@
 /**
- * La Herradura — Dashboard: Tareas
+ * Comercializadora de Granos La Herradura — Dashboard: Tareas
  * Lista de tareas, filtros (estado/tiempo) y modal de
  * creación/edición de tareas (solo ADMIN).
  */
@@ -303,8 +303,9 @@ export function patchTaskModal() {
     if (dueGroup) {
       const horaGroup = document.createElement('div');
       horaGroup.className = 'mform-group';
-      horaGroup.innerHTML = `<label class="mform-label" for="task-hora">Hora *</label>
-        <input type="time" id="task-hora" class="mform-input" value="08:00" required />`;
+      horaGroup.innerHTML = `<label class="mform-label" for="task-hora">Hora límite *</label>
+        <input type="time" id="task-hora" class="mform-input" value="08:00" required />
+        <span class="mform-hint">Hora del día de término en que debe estar lista la tarea.</span>`;
       dueGroup.after(horaGroup);
     }
   }
@@ -317,7 +318,8 @@ export function patchTaskModal() {
       assignGroup.innerHTML = `<label class="mform-label" for="task-assignee">Asignar a *</label>
         <select id="task-assignee" class="mform-input mform-select">
           <option value="">— Selecciona usuario —</option>
-        </select>`;
+        </select>
+        <span class="mform-hint">Becario o empleado del área responsable de realizar esta tarea.</span>`;
       priorityGroup.after(assignGroup);
     }
   }

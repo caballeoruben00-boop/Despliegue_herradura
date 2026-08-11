@@ -1,6 +1,6 @@
 /**
  * ============================================================
- *  La Herradura — API Layer
+ *  Comercializadora de Granos La Herradura — API Layer
  *  api.evidencias.js  — Evidencias (fotos y archivos) de una tarea
  * ============================================================
  *
