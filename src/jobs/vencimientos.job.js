@@ -4,10 +4,32 @@ const { crearNotificacion } = require('../services/notificacion.service');
 const QUINCE_MINUTOS = 15 * 60 * 1000;
 const VENTANA_PROXIMA_VENCER_HORAS = 24;
 
+// Ciudad de México = UTC-6 todo el año (sin horario de verano desde 2022).
+const TZ_OFFSET_HORAS = 6;
+
 /**
- * Busca tareas PENDIENTE cuya fecha límite ya pasó, las marca como
- * ATRASADA y notifica al empleado asignado (una sola vez: en cuanto
- * cambian de estado dejan de calificar para esta consulta).
+ * fechaFin se guarda como fecha "pura" (medianoche UTC, sin hora real
+ * asociada — ver comentario en dashboard.core.js). La hora límite que
+ * el usuario elige se guarda aparte, en el campo `hora` (ej. "17:00"),
+ * asumida en el huso horario de la empresa. Esta función junta ambos
+ * datos para obtener el instante real de vencimiento.
+ */
+function calcularFechaLimite(fechaFin, hora) {
+  const fecha = new Date(fechaFin);
+  const [h, m] = (hora || '23:59').split(':').map(Number);
+  return new Date(Date.UTC(
+    fecha.getUTCFullYear(),
+    fecha.getUTCMonth(),
+    fecha.getUTCDate(),
+    h + TZ_OFFSET_HORAS,
+    m || 0
+  ));
+}
+
+/**
+ * Busca tareas PENDIENTE cuya fecha límite (fecha + hora real) ya pasó,
+ * las marca como ATRASADA y notifica al empleado asignado (una sola vez:
+ * en cuanto cambian de estado dejan de calificar para esta consulta).
  *
  * Se llama tanto desde el job periódico como desde
  * GET /api/tareas (que ya marcaba las atrasadas, solo que sin avisar),
@@ -17,10 +39,16 @@ const VENTANA_PROXIMA_VENCER_HORAS = 24;
 async function marcarYNotificarVencidas() {
   const ahora = new Date();
 
-  const vencidas = await prisma.tarea.findMany({
-    where: { estado: 'PENDIENTE', fechaFin: { lt: ahora } },
-    select: { id: true, nombre: true, asignadoAId: true },
+  // Prisma no puede combinar fechaFin + hora dentro del where, así que
+  // se trae un filtro grueso por día (fechaFin <= ahora, que siempre
+  // cubre el día de hoy y los anteriores) y se afina en JS con la hora
+  // real de cada tarea.
+  const candidatas = await prisma.tarea.findMany({
+    where: { estado: 'PENDIENTE', fechaFin: { lte: ahora } },
+    select: { id: true, nombre: true, asignadoAId: true, fechaFin: true, hora: true },
   });
+
+  const vencidas = candidatas.filter(t => calcularFechaLimite(t.fechaFin, t.hora) < ahora);
 
   if (!vencidas.length) return;
 
@@ -48,12 +76,17 @@ async function notificarProximasAVencer() {
   const ahora = new Date();
   const limite = new Date(ahora.getTime() + VENTANA_PROXIMA_VENCER_HORAS * 60 * 60 * 1000);
 
-  const candidatas = await prisma.tarea.findMany({
+  const candidatasBrutas = await prisma.tarea.findMany({
     where: {
       estado: 'PENDIENTE',
-      fechaFin: { gte: ahora, lte: limite },
+      fechaFin: { gte: ahora, lte: new Date(limite.getTime() + 24 * 60 * 60 * 1000) },
     },
-    select: { id: true, nombre: true, fechaFin: true, asignadoAId: true },
+    select: { id: true, nombre: true, fechaFin: true, hora: true, asignadoAId: true },
+  });
+
+  const candidatas = candidatasBrutas.filter(t => {
+    const limiteReal = calcularFechaLimite(t.fechaFin, t.hora);
+    return limiteReal >= ahora && limiteReal <= limite;
   });
 
   if (!candidatas.length) return;
