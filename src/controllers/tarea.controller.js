@@ -45,7 +45,7 @@ const crearTarea = async (req, res) => {
         usuarioId: tarea.asignadoAId,
         tipo:      'TAREA_ASIGNADA',
         titulo:    'Nueva tarea asignada',
-        mensaje:   `${tarea.creadoPor?.nombre ?? 'Alguien'} te asignó la tarea "${tarea.nombre}", con fecha límite ${new Date(tarea.fechaFin).toLocaleDateString('es-MX')}.`,
+        mensaje:   `${tarea.creadoPor?.nombre ?? 'Alguien'} te asignó la tarea "${tarea.nombre}", con fecha límite ${new Date(tarea.fechaFin).toLocaleDateString('es-MX', { timeZone: 'UTC' })}.`,
         tareaId:   tarea.id,
       }).catch(() => {});
     }
@@ -179,7 +179,7 @@ const actualizarTarea = async (req, res) => {
           usuarioId: tarea.asignadoAId,
           tipo:      'TAREA_ASIGNADA',
           titulo:    'Nueva tarea asignada',
-          mensaje:   `${tarea.creadoPor?.nombre ?? 'Alguien'} te asignó la tarea "${tarea.nombre}", con fecha límite ${new Date(tarea.fechaFin).toLocaleDateString('es-MX')}.`,
+          mensaje:   `${tarea.creadoPor?.nombre ?? 'Alguien'} te asignó la tarea "${tarea.nombre}", con fecha límite ${new Date(tarea.fechaFin).toLocaleDateString('es-MX', { timeZone: 'UTC' })}.`,
           tareaId:   tarea.id,
         }).catch(() => {});
       }

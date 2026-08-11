@@ -180,6 +180,8 @@ img { max-width: 100%; display: block; }
   opacity: 0; transition: opacity var(--dur-base) var(--ease-smooth);
 }
 .sidebar-overlay.is-visible { display: block; opacity: 1; }
+/* Con el menú lateral abierto en móvil el fondo no debe desplazarse */
+body.has-drawer-open { overflow: hidden; }
 
 /* ── 5. TOPBAR ──────────────────────────────────────────────── */
 .topbar {
@@ -257,7 +259,7 @@ img { max-width: 100%; display: block; }
 .kpi-card--red    .kpi-card__icon { background: rgba(192,57,43,.10);  color: var(--color-error); }
 .kpi-card--blue   .kpi-card__icon { background: rgba(41,128,185,.12); color: #2980b9; }
 .kpi-card--purple .kpi-card__icon { background: rgba(139,92,246,.12); color: #8b5cf6; }
-.kpi-card__body { display: flex; flex-direction: column; gap: 2px; }
+.kpi-card__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .kpi-card__value {
   font-family: var(--font-display); font-size: var(--text-2xl);
   font-weight: 700; color: var(--color-charcoal); line-height: 1;
@@ -657,28 +659,42 @@ img { max-width: 100%; display: block; }
   outline: none; transition: border-color var(--dur-base), box-shadow var(--dur-base);
 }
 .search-input:focus { border-color: var(--color-gold); box-shadow: 0 0 0 3px rgba(232,184,50,.20); }
-.employee-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 300px)); gap: var(--space-4); }
+.employee-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: var(--space-4); }
 .employee-card {
   background: var(--color-white); border: 1px solid var(--color-gray-100);
   border-radius: var(--radius-lg); padding: var(--space-6);
   display: flex; flex-direction: column; align-items: center; text-align: center;
-  gap: var(--space-3); box-shadow: var(--shadow-sm); width: 100%; max-width: 300px;
+  gap: var(--space-4); box-shadow: var(--shadow-sm); width: 100%;
   transition: transform var(--dur-fast) var(--ease-spring), box-shadow var(--dur-base);
   animation: cardSlideIn var(--dur-slow) var(--ease-smooth) both; position: relative;
   overflow: hidden;
 }
 .employee-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+/* Bloques internos: en escritorio se apilan centrados; en teléfono el
+   bloque de identidad pasa a fila (avatar a la izquierda). */
+.employee-card__head {
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-3); width: 100%; min-width: 0;
+}
+.employee-card__ident {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 3px; width: 100%; min-width: 0;
+}
 .employee-card__avatar {
-  width: 64px; height: 64px;
+  width: 64px; height: 64px; flex-shrink: 0;
   background: linear-gradient(135deg,var(--color-gold),var(--color-amber));
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display); font-size: var(--text-xl); font-weight: 700;
   color: var(--color-charcoal); box-shadow: 0 4px 16px rgba(232,184,50,.30);
 }
-.employee-card__name { font-family: var(--font-display); font-size: var(--text-base); font-weight: 600; color: var(--color-charcoal); line-height: 1.3; }
+.employee-card__name { font-family: var(--font-display); font-size: var(--text-base); font-weight: 600; color: var(--color-charcoal); line-height: 1.3; overflow-wrap: anywhere; }
 .employee-card__num  { font-size: var(--text-xs); color: var(--color-gray-400); letter-spacing: .04em; }
 .employee-card__pos  { font-size: var(--text-sm); color: var(--color-gray-500); line-height: 1.4; }
-.employee-card__role { padding: 3px 12px; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.employee-card__tags { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.employee-card__role { padding: 3px 12px; border-radius: var(--radius-full); font-size: 0.65rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+/* Usuario desactivado: se distingue de un vistazo sin atenuar los botones */
+.employee-card--inactive .employee-card__avatar { filter: grayscale(1); opacity: .5; box-shadow: none; }
+.employee-card--inactive .employee-card__name { color: var(--color-gray-500); }
 .employee-card__role--admin { background: rgba(232,184,50,.15); color: var(--color-gold-dark); }
 .employee-card__role--gerente { background: rgba(41,128,185,.15); color: #1f6391; }
 .employee-card__role--user  { background: var(--color-gray-50); color: var(--color-gray-500); border: 1px solid var(--color-gray-200); }
@@ -687,20 +703,22 @@ img { max-width: 100%; display: block; }
 .employee-card__status-dot--active   { background: var(--color-success); }
 .employee-card__status-dot--inactive { background: var(--color-gray-300); }
 
+/* Editar/Desactivar comparten fila; Eliminar (y el botón "full") ocupan
+   fila propia. Rejilla de 2 columnas → no depende de cálculos de flex-basis
+   y los botones quedan siempre del mismo ancho. */
 .employee-card__actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
   width: 100%;
-  margin-top: var(--space-2);
+  margin-top: auto;
   min-width: 0;
 }
 .employee-card__actions .task-btn {
   justify-content: center;
   align-items: center;
-  padding: 6px 6px;
-  /* Editar/Desactivar comparten fila; Eliminar (y el botón "full") ocupan fila propia */
-  flex: 1 1 calc(50% - var(--space-2) / 2);
+  padding: 6px 8px;
+  min-height: 38px;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
@@ -709,12 +727,12 @@ img { max-width: 100%; display: block; }
   text-overflow: ellipsis;
   text-align: center;
   line-height: 1.25;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   gap: 4px;
 }
 .employee-card__actions .task-btn--delete,
 .employee-card__actions .task-btn--full {
-  flex: 1 1 100%;
+  grid-column: 1 / -1;
 }
 .employee-card__actions .task-btn svg {
   flex-shrink: 0;
@@ -773,6 +791,9 @@ img { max-width: 100%; display: block; }
 .mform-input.is-invalid { border-color: rgba(192,57,43,.5); background: var(--color-error-bg); }
 .mform-error { font-size: var(--text-xs); color: var(--color-error); min-height: 1em; }
 .modal__actions { display: flex; justify-content: flex-end; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--color-gray-100); }
+/* En los modales sin <form> (confirmación, evidencias) las acciones son hijas
+   directas de .modal y no heredan el margen lateral de .modal__form */
+.modal > .modal__actions { padding: var(--space-4) var(--space-8) var(--space-6); }
 
 /* ── 16. TOASTS ─────────────────────────────────────────────── */
 .toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: 2000; display: flex; flex-direction: column; gap: var(--space-2); pointer-events: none; }
@@ -1139,6 +1160,114 @@ img { max-width: 100%; display: block; }
   .rpt-hero__title { font-size: var(--text-lg); }
   .rpt-pdf-meta-grid { grid-template-columns: 1fr; }
   .rpt-pdf-kpi-row { grid-template-columns: 1fr 1fr; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   18B. MÓVIL — Ajustes específicos para teléfono
+   ─────────────────────────────────────────────────────────────
+   · Directorio de usuarios en formato lista (una fila por usuario)
+   · Áreas táctiles de 38–46px y campos de 16px (evita el zoom
+     automático de iOS al enfocar un input)
+   · Respeto del área segura del dispositivo (notch / barra de gestos)
+   · Modales anclados abajo, al alcance del pulgar
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 840px) {
+  .sidebar { width: min(var(--sidebar-w), 84vw); padding-left: env(safe-area-inset-left); }
+  .sidebar__nav-link { min-height: 46px; }
+  .sidebar__logout { padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
+  .topbar {
+    padding-left:  max(var(--space-5), env(safe-area-inset-left));
+    padding-right: max(var(--space-5), env(safe-area-inset-right));
+  }
+  .main-content {
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+    padding-left:  max(var(--space-6), env(safe-area-inset-left));
+    padding-right: max(var(--space-6), env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 640px) {
+  /* Campos de formulario: 16px evita el zoom automático de iOS */
+  .search-input, .mform-input, .rpt-select { font-size: 16px; }
+  .search-wrapper { max-width: 100%; }
+
+  /* Encabezados compactos: el título nunca empuja a los botones */
+  .topbar__title-text { font-size: var(--text-lg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar__title-crumb { display: none; }
+  .topbar__actions { gap: var(--space-2); }
+  .section-header__title { font-size: var(--text-lg); }
+  .section-header .btn-primary { width: 100%; justify-content: center; }
+  .filter-btn { min-height: 38px; }
+
+  /* Historial de notificaciones: los dos botones caben apilados */
+  #section-notifications .section-header > div { width: 100%; flex-wrap: wrap; }
+  #section-notifications .section-header .btn-secondary { flex: 1 1 100%; justify-content: center; }
+
+  /* ── Directorio de usuarios: una tarjeta por fila ── */
+  .employee-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .employee-card {
+    align-items: stretch; text-align: left;
+    padding: var(--space-4); gap: var(--space-3);
+  }
+  .employee-card:hover { transform: none; box-shadow: var(--shadow-sm); }
+  .employee-card__head { flex-direction: row; align-items: center; gap: var(--space-3); }
+  .employee-card__avatar { width: 46px; height: 46px; font-size: var(--text-base); box-shadow: none; }
+  .employee-card__ident { align-items: flex-start; text-align: left; }
+  .employee-card__pos, .employee-card__num { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .employee-card__tags { flex-direction: row; align-items: center; flex-wrap: wrap; gap: var(--space-2) var(--space-3); }
+  .employee-card__actions .task-btn { min-height: 42px; font-size: 0.78rem; }
+}
+
+@media (max-width: 560px) {
+  /* KPI: el icono cede espacio para que la etiqueta no se corte */
+  .kpi-card { gap: var(--space-3); }
+  .kpi-card__icon { width: 40px; height: 40px; }
+  .kpi-card__icon svg { width: 19px; height: 19px; }
+  .kpi-card__label { overflow-wrap: anywhere; }
+
+  /* Tarjetas de tarea: título completo y acciones en rejilla de 2 */
+  .task-card { padding: var(--space-4); }
+  .task-card__body { padding-left: var(--space-2); }
+  .task-card__title { white-space: normal; overflow-wrap: anywhere; }
+  .task-card__actions {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: var(--space-2); align-items: stretch;
+  }
+  .task-card__actions .badge { justify-self: start; align-self: center; margin-bottom: 0; }
+  .task-card__actions .task-btn { justify-content: center; min-height: 42px; font-size: 0.78rem; }
+
+  /* Modales como hoja inferior, con los botones siempre visibles */
+  .modal-backdrop {
+    align-items: flex-end;
+    padding: var(--space-3) var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+  }
+  .modal { max-height: 88dvh; }
+  .modal__form { padding-bottom: 0; }
+  .modal__grid { gap: var(--space-3) var(--space-4); margin-bottom: var(--space-3); }
+  /* Sin error visible no reservamos el hueco: el formulario cabe en menos scroll */
+  .mform-error:empty { display: none; }
+  .modal__actions {
+    position: sticky; bottom: 0; z-index: 1;
+    background: var(--color-white);
+    gap: var(--space-2);
+    padding: var(--space-3) 0 var(--space-4);
+    margin-top: var(--space-2);
+  }
+  .modal__actions > button { flex: 1 1 0; min-width: 0; justify-content: center; height: 46px; }
+  .modal > .modal__actions { padding: var(--space-3) var(--space-5) var(--space-4); }
+  .rpt-preview-actions { flex-direction: column; padding: 0 var(--space-5) var(--space-4); }
+  .rpt-preview-actions > button { width: 100%; justify-content: center; }
+
+  .toast-container { bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); }
+
+  /* La tabla de historial sigue con scroll horizontal, pero su estado vacío
+     debe leerse sin necesidad de desplazarla */
+  #rpt-history-empty td { padding: 0; }
+  #rpt-history-empty .empty-state {
+    align-items: flex-start; text-align: left;
+    padding: var(--space-6) var(--space-4);
+    position: sticky; left: 0; max-width: calc(100vw - 4 * var(--space-4));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

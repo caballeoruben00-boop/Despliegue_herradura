@@ -62,17 +62,24 @@ function buildEmployeeCard(emp) {
     </div>` : '';
   const roleClass = emp.rol === 'ADMIN' ? 'admin' : 'user';
   const roleLabel = emp.rol === 'ADMIN' ? '⭐ Administrador' : 'Usuario';
-  return `<div class="employee-card" id="emp-card-${emp.id}" role="listitem">
-    <div class="employee-card__avatar">${escHtml(getInitials(emp.nombre))}</div>
-    <span class="employee-card__name">${escHtml(emp.nombre)}</span>
-    <span class="employee-card__num">${escHtml(emp.numeroEmpleado)}</span>
-    <span class="employee-card__pos">${escHtml(emp.cargo || '—')}</span>
-    <span class="employee-card__role employee-card__role--${roleClass}">
-      ${roleLabel}
-    </span>
-    <div class="employee-card__status">
-      <span class="employee-card__status-dot employee-card__status-dot--${status}"></span>
-      ${statusLabel}
+  // Estructura en 3 bloques (identidad / etiquetas / acciones) para que el
+  // CSS pueda reordenarla: tarjeta centrada en escritorio y fila compacta
+  // en teléfono.
+  return `<div class="employee-card${emp.activo ? '' : ' employee-card--inactive'}" id="emp-card-${emp.id}" role="listitem">
+    <div class="employee-card__head">
+      <div class="employee-card__avatar" aria-hidden="true">${escHtml(getInitials(emp.nombre))}</div>
+      <div class="employee-card__ident">
+        <span class="employee-card__name">${escHtml(emp.nombre)}</span>
+        <span class="employee-card__pos" title="${escHtml(emp.cargo || '')}">${escHtml(emp.cargo || '—')}</span>
+        <span class="employee-card__num">${escHtml(emp.numeroEmpleado)}</span>
+      </div>
+    </div>
+    <div class="employee-card__tags">
+      <span class="employee-card__role employee-card__role--${roleClass}">${roleLabel}</span>
+      <span class="employee-card__status">
+        <span class="employee-card__status-dot employee-card__status-dot--${status}"></span>
+        ${statusLabel}
+      </span>
     </div>
     ${adminActions}
   </div>`;

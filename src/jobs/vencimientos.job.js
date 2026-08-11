@@ -73,7 +73,7 @@ async function notificarProximasAVencer() {
     usuarioId: t.asignadoAId,
     tipo:      'TAREA_PROXIMA_VENCER',
     titulo:    'Tarea próxima a vencer',
-    mensaje:   `La tarea "${t.nombre}" vence el ${new Date(t.fechaFin).toLocaleDateString('es-MX', { day: 'numeric', month: 'long' })}.`,
+    mensaje:   `La tarea "${t.nombre}" vence el ${new Date(t.fechaFin).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', timeZone: 'UTC' })}.`,
     tareaId:   t.id,
   })));
 }

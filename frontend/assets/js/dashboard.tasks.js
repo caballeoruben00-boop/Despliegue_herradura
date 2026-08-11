@@ -6,7 +6,7 @@
 'use strict';
 
 import {
-  $, $$, escHtml, formatDate, getTaskStatus, labelStatus, labelPriority,
+  $, $$, escHtml, formatDate, getTaskStatus, labelStatus, labelPriority, priorityKey,
   showModal, hideModal, toast, store, session, isAdmin, canManageUsers,
   openConfirm, showModalError, clearModalErrors,
 } from './dashboard.core.js';
@@ -37,7 +37,8 @@ export function renderTaskPreview() {
   }
   container.innerHTML = recent.map(task => {
     const st = getTaskStatus(task);
-    return `<div class="task-card task-card--${st}" style="cursor:pointer" onclick="navigateTo('tasks')">
+    const pri = priorityKey(task.prioridad);
+    return `<div class="task-card task-card--${st}" data-priority="${pri}" style="cursor:pointer" onclick="navigateTo('tasks')">
       <div class="task-card__body">
         <span class="task-card__title">${escHtml(task.nombre)}</span>
         <div class="task-card__meta">
@@ -47,7 +48,7 @@ export function renderTaskPreview() {
       </div>
       <div class="task-card__actions">
         <span class="badge badge--${st}">${labelStatus(st)}</span>
-        <span class="badge badge--${(task.prioridad||'').toLowerCase()}">${labelPriority(task.prioridad)}</span>
+        <span class="badge badge--${pri}">${labelPriority(task.prioridad)}</span>
       </div>
     </div>`;
   }).join('');
@@ -111,7 +112,7 @@ export function renderTaskList() {
 function buildTaskCard(task) {
   const st = getTaskStatus(task);
   const canUndo = st === 'done';
-  const pri = (task.prioridad || '').toLowerCase();
+  const pri = priorityKey(task.prioridad);
 
   const completeBtn = canUndo
     ? `<button class="task-btn task-btn--undo" onclick="toggleTask(${task.id})">↩️ Reabrir</button>`
@@ -128,7 +129,7 @@ function buildTaskCard(task) {
   const numEvidencias = task._count?.evidencias ?? 0;
   const evidBtn = `<button class="task-btn task-btn--evidencias" onclick="openEvidenciasModal(${task.id})">📎 Evidencias${numEvidencias ? ` (${numEvidencias})` : ''}</button>`;
 
-  return `<div class="task-card task-card--${st}" id="task-card-${task.id}">
+  return `<div class="task-card task-card--${st}" data-priority="${pri}" id="task-card-${task.id}">
     <div class="task-card__body">
       <span class="task-card__title">${escHtml(task.nombre)}</span>
       ${task.descripcion ? `<p class="task-card__desc">${escHtml(task.descripcion)}</p>` : ''}

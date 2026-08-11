@@ -30,8 +30,8 @@ export function getReportTasks() {
     if (empleado && t.asignadoA?.nombre !== empleado) return false;
     if (mes || anio) {
       const due = new Date(t.fechaFin);
-      if (mes  && (due.getMonth()+1) !== parseInt(mes, 10)) return false;
-      if (anio && due.getFullYear()  !== parseInt(anio, 10)) return false;
+      if (mes  && (due.getUTCMonth()+1) !== parseInt(mes, 10)) return false;
+      if (anio && due.getUTCFullYear()  !== parseInt(anio, 10)) return false;
     }
     return true;
   });
@@ -134,7 +134,10 @@ export function generateReport() {
   renderRptProgressBars(tasks);
   const mes = $('rpt-filter-mes')?.value || '';
   const anio = $('rpt-filter-anio')?.value || '';
-  const periodo = mes && anio ? `${MONTH_NAMES[parseInt(mes,10)-1]} ${anio}` : anio || mes ? (anio || MONTH_NAMES[parseInt(mes,10)-1]) : 'Todo el período';
+  const periodo = mes && anio ? `${MONTH_NAMES[parseInt(mes,10)-1]} ${anio}`
+    : anio ? `Todo el año ${anio}`
+    : mes  ? MONTH_NAMES[parseInt(mes,10)-1]
+    : 'Todo el período';
   store.reportHistory.unshift({
     id: 'RPT' + Date.now().toString(36).toUpperCase(),
     backendId: null,
@@ -150,14 +153,15 @@ export function generateReport() {
 /**
  * Crea el reporte en el backend (POST /api/reportes) y descarga el PDF
  * generado con Puppeteer (GET /api/reportes/:id/pdf). El backend exige
- * mes y año, así que se validan antes de llamar.
+ * año; el mes es opcional: si se deja en "Todos los meses" se genera
+ * un reporte anual con los 12 meses del año seleccionado.
  */
 async function crearYDescargarPDF() {
   const mes  = $('rpt-filter-mes')?.value  || '';
   const anio = $('rpt-filter-anio')?.value || '';
 
-  if (!mes || !anio) {
-    toast('⚠️ Selecciona mes y año para crear el PDF', 'error');
+  if (!anio) {
+    toast('⚠️ Selecciona al menos el año para crear el PDF', 'error');
     return;
   }
 
@@ -182,7 +186,7 @@ async function crearYDescargarPDF() {
     store.reportHistory.unshift({
       id: 'RPT' + Date.now().toString(36).toUpperCase(),
       backendId: reporte.id,
-      periodo: `${MONTH_NAMES[parseInt(mes,10)-1]} ${anio}`,
+      periodo: mes ? `${MONTH_NAMES[parseInt(mes,10)-1]} ${anio}` : `Todo el año ${anio}`,
       empleado: empleadoSel?.value || 'Todos',
       generado: new Date().toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'}),
       tasks: getReportTasks(),

@@ -64,7 +64,7 @@ enum Estado {
 }
 model Reporte {
   id              Int      @id @default(autoincrement())
-  mes             Int
+  mes             Int?
   anio            Int
   totalTareas     Int      @default(0)
   completadas     Int      @default(0)

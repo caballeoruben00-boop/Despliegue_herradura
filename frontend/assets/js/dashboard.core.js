@@ -63,9 +63,14 @@ export function escHtml(str = '') {
 
 export function formatDate(dateStr) {
   if (!dateStr) return '—';
+  // Las fechas de tareas (fechaInicio/fechaFin) se guardan como fecha "pura"
+  // (medianoche UTC), sin hora real asociada. Por eso se leen con los
+  // getters UTC (getUTCDate, etc.) y no con los locales: si se usaran los
+  // locales, en zonas horarias detrás de UTC (como México) la fecha se
+  // corre un día hacia atrás.
   const d = new Date(dateStr);
   const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 export function getTaskStatus(task) {
@@ -86,6 +91,16 @@ export function labelStatus(st) {
 export function labelPriority(p) {
   const map = { ALTA: 'Alta', MEDIA: 'Media', BAJA: 'Baja', high: 'Alta', medium: 'Media', low: 'Baja' };
   return map[p] || p;
+}
+
+/**
+ * Normaliza la prioridad del backend ('ALTA'|'MEDIA'|'BAJA') a la clave que
+ * usa el CSS ('high'|'medium'|'low'), tanto para la etiqueta de color como
+ * para la franja lateral de la tarjeta.
+ */
+export function priorityKey(p = '') {
+  return { alta: 'high', media: 'medium', baja: 'low',
+           high: 'high', medium: 'medium', low: 'low' }[String(p).toLowerCase()] || '';
 }
 
 export function getInitials(name = '') {

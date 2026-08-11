@@ -100,7 +100,7 @@ window.navigateTo = function(sectionId) {
   $(`section-${sectionId}`)?.classList.remove('content-section--hidden');
   $$('.sidebar__nav-link').forEach(a => a.classList.remove('sidebar__nav-link--active'));
   document.querySelector(`.sidebar__nav-link[data-section="${sectionId}"]`)?.classList.add('sidebar__nav-link--active');
-  const titles = { overview: 'Panel General', tasks: 'Tareas', employees: 'Empleados', reports: 'Reportes', notifications: 'Notificaciones' };
+  const titles = { overview: 'Panel General', tasks: 'Tareas', employees: 'Usuarios', reports: 'Reportes', notifications: 'Notificaciones' };
   const titleEl = $('page-title');
   if (titleEl) titleEl.textContent = titles[sectionId] || sectionId;
   store.activeSection = sectionId;
@@ -113,10 +113,15 @@ window.navigateTo = function(sectionId) {
 function openMobileSidebar() {
   $('sidebar').classList.add('is-open');
   $('sidebar-overlay').classList.add('is-visible');
+  // Evita que el contenido siga desplazándose detrás del menú en móvil
+  document.body.classList.add('has-drawer-open');
+  $('btn-hamburger')?.setAttribute('aria-expanded', 'true');
 }
 function closeMobileSidebar() {
   $('sidebar').classList.remove('is-open');
   $('sidebar-overlay').classList.remove('is-visible');
+  document.body.classList.remove('has-drawer-open');
+  $('btn-hamburger')?.setAttribute('aria-expanded', 'false');
 }
 
 /* ══════════════════════════════════════════════════════════════

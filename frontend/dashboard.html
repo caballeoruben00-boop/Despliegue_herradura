@@ -6,7 +6,10 @@
        dashboard.html — v3.0 (+ Módulo de Reportes)
        ============================================================ -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Coincide con el fondo de la topbar para que la barra de estado del
+       teléfono no corte visualmente el encabezado -->
+  <meta name="theme-color" content="#FFFFFF" />
   <title>La Herradura · Panel Principal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -422,7 +425,7 @@
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input type="search" class="search-input" id="employee-search" placeholder="Buscar por nombre, cargo o número…" />
+          <input type="search" class="search-input" id="employee-search" placeholder="Nombre, cargo o número…" aria-label="Buscar usuarios" />
         </div>
 
         <div class="employee-grid" id="employee-grid" role="list"></div>
@@ -528,7 +531,7 @@
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Vista previa
             </button>
-            <button class="btn-secondary" id="rpt-pdf-btn">
+            <button class="btn-secondary" id="rpt-pdf-btn" title="Con &quot;Todos los meses&quot; seleccionado se genera el reporte del año completo">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="18" x2="13" y2="18"/></svg>
               Crear PDF
             </button>
