@@ -1138,6 +1138,21 @@ body.has-drawer-open { overflow: hidden; }
   .rpt-filters-actions { flex-direction: column; align-items: stretch; }
   .rpt-filters-actions .btn-primary,
   .rpt-filters-actions .btn-secondary { width: 100%; justify-content: center; }
+
+  /* Directorio de usuarios: tarjeta horizontal compacta en vez de bloque
+     vertical centrado, para que quepan más usuarios por pantalla y sin
+     tanto scroll. */
+  .employee-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .employee-card {
+    max-width: 100%; padding: var(--space-4); gap: var(--space-3);
+    animation: none;
+  }
+  .employee-card__body { flex-direction: row; align-items: center; gap: var(--space-3); text-align: left; }
+  .employee-card__avatar { width: 48px; height: 48px; font-size: var(--text-base); flex-shrink: 0; }
+  .employee-card__info { align-items: flex-start; text-align: left; gap: 2px; }
+  .employee-card__name { font-size: var(--text-sm); }
+  .employee-card__meta { justify-content: flex-start; gap: var(--space-2); margin-top: 2px; }
+  .employee-card__actions .task-btn { font-size: 0.72rem; padding: 8px 6px; }
 }
 
 @media (max-width: 560px) {
