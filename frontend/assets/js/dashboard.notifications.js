@@ -7,15 +7,17 @@
 
 import { $, $$, escHtml, store, toast } from './dashboard.core.js';
 import {
-  listarNotificaciones, marcarLeida, marcarTodasLeidas,
+  listarNotificaciones, contarNoLeidas, marcarLeida, marcarTodasLeidas,
   eliminarNotificacion, abrirStreamNotificaciones,
 } from './api.notificaciones.js';
 import { refreshTasks } from './dashboard.js';
-import { activarNotificacionesPush, pushYaActivo } from './push.js';
+import { activarNotificacionesPush, pushYaActivo, sincronizarSuscripcionPush } from './push.js';
 const PAGE_SIZE = 30;
 const DROPDOWN_MAX = 8;
+const POLL_INTERVAL_MS = 40_000; // red de seguridad si el stream en vivo falla
 
-let eventSource = null;
+let streamCtrl = null;
+let pollIntervalId = null;
 
 /* ══════════════════════════════════════════════════════════════
    UTILIDADES DE PRESENTACIÓN
@@ -214,6 +216,53 @@ async function actualizarBotonPush() {
   btn.textContent = activo ? '🔔 Notificaciones activadas' : '🔔 Activar notificaciones';
   btn.disabled = activo;
 }
+
+// Punto único de entrada para una notificación nueva, venga del stream
+// en vivo (SSE) o del sondeo de respaldo: evita duplicados y aplica
+// siempre el mismo efecto (badge, toast, refresco de tareas).
+function recibirNotificacion(n) {
+  if (store.notifications.some(x => x.id === n.id)) return;
+  store.notifications.unshift(n);
+  if (!n.leida) store.unreadNotifCount++;
+  renderAllNotifUI();
+  toast(`🔔 ${n.titulo}`, 'default');
+
+  // Cualquier notificación ligada a una tarea (asignada, reasignada,
+  // actualizada, completada, eliminada, próxima a vencer/vencida)
+  // implica que la lista de tareas cambió en el servidor: la
+  // refrescamos sola para que se refleje sin recargar la página.
+  if (n.tipo && n.tipo !== 'GENERAL') {
+    refreshTasks();
+  }
+}
+
+// ── Red de seguridad ─────────────────────────────────────────────
+// El stream SSE cubre el caso normal (notificación instantánea), pero
+// depende de que la conexión siga viva. Como respaldo, cada cierto
+// tiempo comparamos el conteo real de no leídas contra el que tenemos
+// en memoria; si no coincide (el stream se cayó, la pestaña estuvo en
+// segundo plano, hubo un despliegue, etc.) recuperamos lo que falte.
+// Así el usuario nunca deja de enterarse de una tarea asignada, aunque
+// el canal en tiempo real haya fallado por completo.
+async function sondearNotificacionesFaltantes() {
+  try {
+    const { noLeidas } = await contarNoLeidas();
+    if (noLeidas === store.unreadNotifCount) return;
+
+    const { notificaciones } = await listarNotificaciones({ limit: PAGE_SIZE });
+    const nuevas = notificaciones.filter(n => !store.notifications.some(x => x.id === n.id));
+    // De más antigua a más reciente, para que el toast/orden se sienta natural.
+    nuevas.reverse().forEach(recibirNotificacion);
+
+    // Por si el conteo cambió sin que hubiera notificaciones nuevas
+    // detectables aquí (p. ej. se marcaron leídas desde otro dispositivo).
+    store.unreadNotifCount = noLeidas;
+    renderAllNotifUI();
+  } catch (e) {
+    // Silencioso: es un chequeo de respaldo periódico, no debe generar ruido.
+  }
+}
+
 export async function initNotifications() {
   try {
     const { notificaciones, noLeidas } = await listarNotificaciones({ limit: PAGE_SIZE });
@@ -226,22 +275,30 @@ export async function initNotifications() {
   renderAllNotifUI();
   actualizarBotonPush();
 
-  if (eventSource) eventSource.close();
-  eventSource = abrirStreamNotificaciones(n => {
-    // Evitar duplicados si por alguna razón ya llegó (reconexión, etc.)
-    if (store.notifications.some(x => x.id === n.id)) return;
-    store.notifications.unshift(n);
-    if (!n.leida) store.unreadNotifCount++;
-    renderAllNotifUI();
-    toast(`🔔 ${n.titulo}`, 'default');
+  // Silencioso: si el permiso ya estaba concedido de una sesión anterior,
+  // reafirma la suscripción push en el backend sin pedirle nada al
+  // usuario. Ver el porqué en el comentario de sincronizarSuscripcionPush.
+  sincronizarSuscripcionPush().then((sincronizado) => {
+    if (sincronizado) actualizarBotonPush();
+  });
 
-    // Cualquier notificación ligada a una tarea (asignada, reasignada,
-    // actualizada, completada, eliminada, próxima a vencer/vencida)
-    // implica que la lista de tareas cambió en el servidor: la
-    // refrescamos sola para que se refleje sin recargar la página.
-    if (n.tipo && n.tipo !== 'GENERAL') {
-      refreshTasks();
+  if (streamCtrl) streamCtrl.cerrar();
+  streamCtrl = abrirStreamNotificaciones(recibirNotificacion, estado => {
+    // 'perdido' = llevamos varios intentos fallidos de reconexión; el
+    // sondeo de respaldo de abajo sigue funcionando de todas formas,
+    // así que esto es solo informativo, no bloquea nada.
+    if (estado === 'perdido') {
+      console.warn('⚠️ No se pudo restablecer el canal de notificaciones en tiempo real; usando respaldo por sondeo.');
     }
+  });
+
+  if (pollIntervalId) clearInterval(pollIntervalId);
+  pollIntervalId = setInterval(sondearNotificacionesFaltantes, POLL_INTERVAL_MS);
+
+  // Si la pestaña estuvo oculta/dormida, en cuanto vuelve a primer
+  // plano conviene sondear de inmediato en vez de esperar hasta 40s.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') sondearNotificacionesFaltantes();
   });
 }
 

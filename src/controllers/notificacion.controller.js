@@ -179,6 +179,37 @@ const eliminarSuscripcionPush = async (req, res) => {
   }
 };
 
+// Sin verificarToken a propósito: el service worker dispara esto desde
+// segundo plano (evento 'pushsubscriptionchange'), donde no hay acceso al
+// JWT guardado en sessionStorage de ninguna pestaña. El propio endpoint
+// anterior funciona como credencial: es un valor único e impredecible que
+// solo conoce el navegador dueño de esa suscripción, y ya está ligado a un
+// usuarioId en la base. Si no lo encontramos, no hacemos nada (no se puede
+// identificar al usuario de forma segura sin ese dato).
+const rotarSuscripcionPush = async (req, res) => {
+  const { endpointAnterior, endpoint, keys } = req.body;
+  if (!endpointAnterior || !endpoint || !keys?.p256dh || !keys?.auth) {
+    return res.status(400).json({ error: 'Datos de rotación de suscripción inválidos' });
+  }
+  try {
+    const anterior = await prisma.pushSubscription.findUnique({ where: { endpoint: endpointAnterior } });
+    if (!anterior) return res.status(404).json({ error: 'Suscripción anterior no encontrada' });
+
+    // El endpoint nuevo puede coincidir con el de otro registro huérfano
+    // (reinstalaciones, etc.); lo quitamos antes para no chocar con el
+    // índice único de `endpoint`.
+    await prisma.pushSubscription.deleteMany({ where: { endpoint, NOT: { id: anterior.id } } });
+    await prisma.pushSubscription.update({
+      where: { id: anterior.id },
+      data: { endpoint, p256dh: keys.p256dh, auth: keys.auth },
+    });
+    res.json({ mensaje: 'Suscripción rotada' });
+  } catch (error) {
+    console.error('Error rotarSuscripcionPush:', error.message);
+    res.status(500).json({ error: 'Error al rotar la suscripción' });
+  }
+};
+
 module.exports = {
   listarNotificaciones,
   contarNoLeidas,
@@ -189,5 +220,6 @@ module.exports = {
   obtenerVapidPublicKey,
   guardarSuscripcionPush,
   eliminarSuscripcionPush,
+  rotarSuscripcionPush,
 };
 
