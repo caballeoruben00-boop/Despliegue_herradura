@@ -225,12 +225,31 @@ const desactivarUsuario = async (req, res) => {
   }
 };
 
+// Palabra exacta que un ADMIN debe escribir para confirmar que quiere
+// eliminar PERMANENTEMENTE a otro ADMIN. Es una confirmación adicional
+// a la contraseña, pensada para evitar borrados accidentales de cuentas
+// administrativas (que normalmente están protegidas).
+const PALABRA_CONFIRMACION_ADMIN = 'ELIMINAR';
+
 // ── DELETE /api/usuarios/:id ────────────────────────────────────
 // Elimina PERMANENTEMENTE a un usuario (hard delete).
 // Requiere la contraseña del ADMIN que ejecuta la acción, como confirmación.
+//
+// Un ADMIN SÍ puede eliminar a otro ADMIN (a diferencia de editar/
+// desactivar, donde sigue protegido), pero solo si además de su
+// contraseña escribe la palabra "ELIMINAR" tal cual, y solo si no es
+// el último administrador activo del sistema (para no dejarlo sin
+// nadie que pueda gestionarlo).
+//
+// Las evidencias (fotos/PDFs) NO se pierden al eliminar un usuario:
+// pertenecen a la Tarea (no al Usuario) y la relación Evidencia→Tarea
+// nunca se toca aquí. Solo se limpia la referencia de "quién la subió"
+// (subidoPorId queda en NULL vía ON DELETE SET NULL), igual que
+// "creadoPorId"/"asignadoAId" en Tarea. El archivo en disco y el
+// registro de la evidencia permanecen intactos.
 const eliminarUsuario = async (req, res) => {
   const id = parseInt(req.params.id);
-  const { password } = req.body;
+  const { password, confirmacion } = req.body;
 
   // No se puede eliminar a uno mismo
   if (id === req.usuario.id) {
@@ -244,8 +263,22 @@ const eliminarUsuario = async (req, res) => {
   try {
     const objetivo = await prisma.usuario.findUnique({ where: { id } });
     if (!objetivo) return res.status(404).json({ error: 'Usuario no encontrado' });
-    if (!puedeModificarObjetivo(req.usuario, objetivo)) {
-      return res.status(403).json({ error: 'No puedes eliminar a otro administrador' });
+
+    const objetivoEsAdmin = objetivo.rol === 'ADMIN';
+
+    // Eliminar a otro ADMIN requiere escribir la palabra de confirmación.
+    if (objetivoEsAdmin) {
+      if (confirmacion !== PALABRA_CONFIRMACION_ADMIN) {
+        return res.status(400).json({
+          error: `Para eliminar a otro administrador debes escribir "${PALABRA_CONFIRMACION_ADMIN}" tal cual.`,
+        });
+      }
+
+      // No dejar el sistema sin administradores.
+      const totalAdmins = await prisma.usuario.count({ where: { rol: 'ADMIN' } });
+      if (totalAdmins <= 1) {
+        return res.status(400).json({ error: 'No puedes eliminar al último administrador del sistema' });
+      }
     }
 
     const admin = await prisma.usuario.findUnique({ where: { id: req.usuario.id } });

@@ -53,12 +53,16 @@ function buildEmployeeCard(emp) {
   // a otro administrador.
   const esUnoMismo = emp.id === session.id;
   const esAdminObjetivo = emp.rol === 'ADMIN';
+  // Editar/desactivar sigue protegido: un admin no puede tocar a otro
+  // admin (salvo a sí mismo). Eliminar SÍ se permite entre admins,
+  // pero pide una palabra de confirmación adicional (ver confirmDeleteUser).
   const puedeAdministrar = isAdmin && (esUnoMismo || !esAdminObjetivo);
-  const adminActions = puedeAdministrar ? `
+  const puedeEliminar = isAdmin && !esUnoMismo;
+  const adminActions = (puedeAdministrar || puedeEliminar) ? `
     <div class="employee-card__actions">
-      <button class="task-btn task-btn--edit${emp.activo ? '' : ' task-btn--full'}" onclick="openEditUser(${emp.id})">✏️ Editar</button>
-      ${(!esUnoMismo && emp.activo) ? `<button class="task-btn task-btn--edit" onclick="confirmDeactivateUser(${emp.id})">🚫 Desactivar</button>` : ''}
-      ${!esUnoMismo ? `<button class="task-btn task-btn--delete" onclick="confirmDeleteUser(${emp.id})">🗑️ Eliminar</button>` : ''}
+      ${puedeAdministrar ? `<button class="task-btn task-btn--edit${emp.activo ? '' : ' task-btn--full'}" onclick="openEditUser(${emp.id})">✏️ Editar</button>` : ''}
+      ${(puedeAdministrar && !esUnoMismo && emp.activo) ? `<button class="task-btn task-btn--edit" onclick="confirmDeactivateUser(${emp.id})">🚫 Desactivar</button>` : ''}
+      ${puedeEliminar ? `<button class="task-btn task-btn--delete" onclick="confirmDeleteUser(${emp.id})">🗑️ Eliminar</button>` : ''}
     </div>` : '';
   const roleClass = emp.rol === 'ADMIN' ? 'admin' : 'user';
   const roleLabel = emp.rol === 'ADMIN' ? '⭐ Administrador' : 'Usuario';
@@ -116,25 +120,33 @@ window.confirmDeactivateUser = function(id) {
   );
 };
 
-// Elimina (hard delete) definitivamente a un usuario.
+// Elimina (hard delete) definitivamente a un usuario. Las evidencias
+// (fotos/PDFs subidos en las tareas) NUNCA se borran por esto: quedan
+// intactas, solo se pierde el dato de "quién la subió" si era este
+// usuario. Ver comentario en usuario.controller.js (eliminarUsuario).
 window.confirmDeleteUser = function(id) {
   const emp = store.users.find(e => e.id === id);
   if (!emp) return;
   const esAdminObjetivo = emp.rol === 'ADMIN';
   const mensaje = esAdminObjetivo
-    ? `¿Eliminar PERMANENTEMENTE al administrador "${emp.nombre}"? Esta acción requiere la contraseña de ESE administrador y no se puede deshacer.`
-    : `¿Eliminar PERMANENTEMENTE al usuario "${emp.nombre}"? Esta acción requiere tu contraseña y no se puede deshacer.`;
+    ? `¿Eliminar PERMANENTEMENTE al administrador "${emp.nombre}"? Esta acción no se puede deshacer. Las evidencias que haya subido NO se pierden, solo se elimina su cuenta.`
+    : `¿Eliminar PERMANENTEMENTE al usuario "${emp.nombre}"? Esta acción requiere tu contraseña y no se puede deshacer. Sus evidencias no se pierden.`;
   openConfirm(
     mensaje,
     async (password) => {
       try {
-        await eliminarUsuarioApi(id, password);
+        await eliminarUsuarioApi(id, password, esAdminObjetivo ? 'ELIMINAR' : undefined);
         store.users = store.users.filter(e => e.id !== id);
         renderEmployees($('employee-search')?.value || '');
         toast('Usuario eliminado', 'success');
       } catch(e) { toast('❌ ' + e.message, 'error'); }
     },
-    { title: 'Eliminar Usuario', okLabel: 'Eliminar', requirePassword: true }
+    {
+      title: 'Eliminar Usuario',
+      okLabel: 'Eliminar',
+      requirePassword: true,
+      ...(esAdminObjetivo ? { requireTextMatch: 'ELIMINAR', requireTextLabel: 'Escribe la palabra' } : {}),
+    }
   );
 };
 

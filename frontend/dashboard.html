@@ -909,6 +909,11 @@
         <input type="password" id="confirm-password" class="mform-input" placeholder="Tu contraseña" autocomplete="current-password" />
         <span class="mform-error" id="err-confirm-password"></span>
       </div>
+      <div class="mform-group" id="confirm-text-group" hidden style="margin-top:12px;">
+        <label class="mform-label" id="confirm-text-label" for="confirm-text">Escribe la palabra de confirmación</label>
+        <input type="text" id="confirm-text" class="mform-input" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+        <span class="mform-error" id="err-confirm-text"></span>
+      </div>
       <div class="modal__actions">
         <button class="btn-secondary" id="modal-confirm-cancel">Cancelar</button>
         <button class="btn-danger"    id="modal-confirm-ok">Confirmar</button>

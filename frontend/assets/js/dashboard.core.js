@@ -183,7 +183,15 @@ export function clearModalErrors(ids) {
    MODAL CONFIRMACIÓN — compartido por tasks.js y users.js
 ══════════════════════════════════════════════════════════════ */
 export function openConfirm(message, callback, opts = {}) {
-  const { title = '¿Confirmar acción?', okLabel = 'Sí, confirmar', okClass = 'btn-danger', showClose = true, requirePassword = false } = opts;
+  const {
+    title = '¿Confirmar acción?', okLabel = 'Sí, confirmar', okClass = 'btn-danger', showClose = true,
+    requirePassword = false,
+    // Palabra exacta que el usuario debe escribir para habilitar la
+    // confirmación (p. ej. "ELIMINAR" al borrar a otro administrador).
+    // null/undefined = no se pide texto de confirmación.
+    requireTextMatch = null,
+    requireTextLabel = 'Escribe la palabra de confirmación',
+  } = opts;
   $('modal-confirm-title').textContent = title;
   $('confirm-message').textContent = message;
   $('modal-confirm-ok').textContent = okLabel;
@@ -191,21 +199,37 @@ export function openConfirm(message, callback, opts = {}) {
   $('modal-confirm-close').style.display = showClose ? '' : 'none';
   store.confirmCallback = callback;
   store.confirmRequiresPassword = requirePassword;
+  store.confirmRequireTextMatch = requireTextMatch;
+
   const pwGroup = $('confirm-password-group');
   const pwInput = $('confirm-password');
   if (pwGroup) pwGroup.hidden = !requirePassword;
   if (pwInput) pwInput.value = '';
   clearModalError('err-confirm-password', pwInput);
+
+  const txtGroup = $('confirm-text-group');
+  const txtInput = $('confirm-text');
+  const txtLabel = $('confirm-text-label');
+  const necesitaTexto = !!requireTextMatch;
+  if (txtGroup) txtGroup.hidden = !necesitaTexto;
+  if (txtLabel) txtLabel.textContent = `${requireTextLabel} ("${requireTextMatch || ''}")`;
+  if (txtInput) txtInput.value = '';
+  clearModalError('err-confirm-text', txtInput);
+
   showModal('modal-confirm-backdrop');
   if (requirePassword) setTimeout(() => pwInput?.focus(), 50);
+  else if (necesitaTexto) setTimeout(() => txtInput?.focus(), 50);
 }
 
 export function closeConfirm() {
   hideModal('modal-confirm-backdrop');
   store.confirmCallback = null;
   store.confirmRequiresPassword = false;
+  store.confirmRequireTextMatch = null;
   const pwInput = $('confirm-password');
   if (pwInput) pwInput.value = '';
+  const txtInput = $('confirm-text');
+  if (txtInput) txtInput.value = '';
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -217,14 +241,21 @@ export function attachConfirmModalEvents() {
   $('modal-confirm-cancel')?.addEventListener('click', closeConfirm);
   $('modal-confirm-backdrop')?.addEventListener('click', e => { if(e.target===$('modal-confirm-backdrop')) closeConfirm(); });
   $('modal-confirm-ok')?.addEventListener('click', () => {
+    let pwd;
     if (store.confirmRequiresPassword) {
       const pwInput = $('confirm-password');
-      const pwd = pwInput?.value || '';
+      pwd = pwInput?.value || '';
       if (!pwd) { showModalError('err-confirm-password', pwInput, 'Ingresa tu contraseña.'); return; }
-      if (store.confirmCallback) store.confirmCallback(pwd);
-    } else {
-      if (store.confirmCallback) store.confirmCallback();
     }
+    if (store.confirmRequireTextMatch) {
+      const txtInput = $('confirm-text');
+      const texto = txtInput?.value || '';
+      if (texto !== store.confirmRequireTextMatch) {
+        showModalError('err-confirm-text', txtInput, `Debes escribir exactamente "${store.confirmRequireTextMatch}".`);
+        return;
+      }
+    }
+    if (store.confirmCallback) store.confirmCallback(pwd);
     closeConfirm();
   });
 }

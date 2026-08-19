@@ -93,16 +93,21 @@ export async function desactivarUsuario(id, password) {
 }
 
 /**
- * Elimina (hard delete) definitivamente a un usuario. Misma regla de
- * confirmación de contraseña que desactivarUsuario.
+ * Elimina (hard delete) definitivamente a un usuario. Requiere la
+ * contraseña de quien ejecuta la acción.
+ *
+ * Si el usuario objetivo es ADMIN, el backend además exige que
+ * `confirmacion` sea exactamente la palabra "ELIMINAR", como paso
+ * extra de seguridad antes de borrar a otro administrador.
  *
  * @param {number} id
  * @param {string} password
+ * @param {string} [confirmacion] - Solo requerido al eliminar a un ADMIN.
  * @returns {Promise<{ mensaje: string }>}
  */
-export async function eliminarUsuario(id, password) {
+export async function eliminarUsuario(id, password, confirmacion) {
   return apiRequest(`/usuarios/${id}`, {
     method: 'DELETE',
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, confirmacion }),
   });
 }
