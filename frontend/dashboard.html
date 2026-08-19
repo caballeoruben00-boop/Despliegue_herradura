@@ -53,6 +53,14 @@
         <span class="sidebar__profile-name" id="sidebar-name">Cargando…</span>
         <span class="sidebar__profile-role" id="sidebar-role">—</span>
       </div>
+      <button class="sidebar__profile-pw-btn" id="btn-google-calendar" type="button"
+              title="Vincular Google Calendar" aria-label="Vincular Google Calendar"
+              style="background:transparent;border:none;cursor:pointer;color:inherit;opacity:.7;padding:4px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <path d="M16 2v4M8 2v4M3 10h18"/>
+        </svg>
+      </button>
       <button class="sidebar__profile-pw-btn" id="btn-change-password" type="button"
               title="Cambiar contraseña" aria-label="Cambiar contraseña"
               style="background:transparent;border:none;cursor:pointer;color:inherit;opacity:.7;padding:4px;">
@@ -1017,6 +1025,31 @@
           <button type="submit"  class="btn-primary"  id="profile-pw-submit">Guardar Contraseña</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Modal: Vincular Google Calendar -->
+  <div class="modal-backdrop modal-backdrop--sm" id="modal-google-calendar-backdrop"
+       role="dialog" aria-modal="true" aria-labelledby="modal-google-calendar-title"
+       hidden style="display:none">
+    <div class="modal modal--sm" id="modal-google-calendar">
+      <div class="modal__header">
+        <h3 class="modal__title" id="modal-google-calendar-title">Google Calendar</h3>
+        <button class="modal__close" id="modal-google-calendar-close" aria-label="Cerrar modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal__body" style="padding:0 24px 8px;">
+        <p id="google-calendar-desc" style="margin:0 0 16px;opacity:.85;font-size:.9rem;">
+          Conecta tu cuenta de Google para que las tareas que se te asignen aparezcan
+          automáticamente en tu calendario, con su fecha y hora límite.
+        </p>
+        <p id="google-calendar-status" style="font-size:.9rem;font-weight:600;">Consultando estado…</p>
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="btn-secondary" id="google-calendar-desconectar" hidden>Desvincular</button>
+        <button type="button" class="btn-primary"    id="google-calendar-conectar"   hidden>Conectar con Google</button>
+      </div>
     </div>
   </div>
 

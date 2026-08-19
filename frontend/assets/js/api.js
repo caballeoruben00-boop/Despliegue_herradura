@@ -21,3 +21,4 @@ export * from './api.tareas.js';
 export * from './api.usuarios.js';
 export * from './api.reportes.js';
 export * from './api.notificaciones.js';
+export * from './api.google.js';

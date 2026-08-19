@@ -1,6 +1,7 @@
 const prisma = require('../prismaClient');
 const { crearNotificacion } = require('../services/notificacion.service');
 const { marcarYNotificarVencidas } = require('../jobs/vencimientos.job');
+const googleCalendarService = require('../services/googleCalendar.service');
 
 // ── Incluye relaciones en todas las respuestas de tarea ─────────
 const tareaInclude = {
@@ -56,6 +57,12 @@ const crearTarea = async (req, res) => {
         tareaId:   tarea.id,
       }).catch(() => {});
     }
+
+    // Si el empleado asignado tiene Google Calendar conectado, se crea
+    // el evento correspondiente. No bloquea la respuesta ni falla la
+    // creación de la tarea si Google no está disponible.
+    googleCalendarService.sincronizarTarea(tarea).catch((e) =>
+      console.error('Error sincronizando tarea nueva con Google Calendar:', e.message));
 
     res.status(201).json(tarea);
   } catch (error) {
@@ -224,6 +231,24 @@ const actualizarTarea = async (req, res) => {
       }).catch(() => {});
     }
 
+    // ── Sincronización con Google Calendar ─────────────────────
+    // Si la tarea cambió de dueño, el evento anterior (en el
+    // calendario del empleado anterior) se elimina y se crea uno
+    // nuevo en el calendario del nuevo asignado. Si no cambió de
+    // dueño, simplemente se actualiza el evento existente (o se crea
+    // uno si el usuario acaba de conectar su Google Calendar).
+    if (fueReasignada && anterior.googleEventId) {
+      googleCalendarService.eliminarEventoTarea({
+        asignadoAId: anterior.asignadoAId,
+        googleEventId: anterior.googleEventId,
+      }).catch((e) => console.error('Error eliminando evento anterior de Google Calendar:', e.message));
+
+      await prisma.tarea.update({ where: { id }, data: { googleEventId: null } });
+      tarea.googleEventId = null;
+    }
+    googleCalendarService.sincronizarTarea(tarea).catch((e) =>
+      console.error('Error sincronizando tarea con Google Calendar:', e.message));
+
     res.json(tarea);
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ error: 'Tarea no encontrada' });
@@ -261,6 +286,9 @@ const completarTarea = async (req, res) => {
       }).catch(() => {});
     }
 
+    googleCalendarService.sincronizarTarea(tarea).catch((e) =>
+      console.error('Error sincronizando tarea completada con Google Calendar:', e.message));
+
     res.json(tarea);
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ error: 'Tarea no encontrada' });
@@ -294,6 +322,9 @@ const eliminarTarea = async (req, res) => {
         mensaje:   `La tarea "${tarea.nombre}" fue eliminada por quien la creó.`,
       }).catch(() => {});
     }
+
+    googleCalendarService.eliminarEventoTarea(tarea).catch((e) =>
+      console.error('Error eliminando evento de Google Calendar:', e.message));
 
     await prisma.tarea.delete({ where: { id } });
     res.json({ mensaje: 'Tarea eliminada correctamente' });

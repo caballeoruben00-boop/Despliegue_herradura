@@ -24,6 +24,14 @@ model Usuario {
   evidencias       Evidencia[]
 pushSubscriptions PushSubscription[]
 sesiones SesionActiva[]
+
+  // ── Vinculación con Google Calendar (OAuth2 por usuario) ────
+  // El usuario conecta su propia cuenta de Google; las tareas que se
+  // le asignen se sincronizan automáticamente a su calendario.
+  googleAccessToken    String?
+  googleRefreshToken   String?
+  googleTokenExpiry    DateTime?
+  googleCalendarEmail  String?
 }
 model Tarea {
   id              Int        @id @default(autoincrement())
@@ -45,6 +53,10 @@ asignadoA       Usuario?   @relation("TareaAsignada", fields: [asignadoAId], ref
 
   notificaciones  Notificacion[]
   evidencias      Evidencia[]
+
+  // ID del evento creado en el Google Calendar del usuario asignado
+  // (permite actualizarlo o borrarlo cuando la tarea cambia).
+  googleEventId   String?
 }
 
 enum Rol {

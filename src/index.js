@@ -9,6 +9,7 @@ const usuarioRoutes = require('./routes/usuario.routes');
 const tareaRoutes = require('./routes/tarea.routes');
 const reporteRoutes = require('./routes/reporte.routes');
 const notificacionRoutes = require('./routes/notificacion.routes');
+const googleRoutes = require('./routes/google.routes');
 const { iniciarJobVencimientos } = require('./jobs/vencimientos.job');
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/tareas', tareaRoutes);
 app.use('/api/reportes', reporteRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
+app.use('/api/google', googleRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
